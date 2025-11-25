@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geincos Academy | Mi Espacio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4338ca;       /* Indigo profundo */
+            --primary-light: #6366f1; /* Indigo vibrante */
+            --accent: #f59e0b;        /* Dorado / Ambar */
+            --surface: #ffffff;
+            --bg-body: #f3f4f6;
+            --text-main: #111827;
+            --text-light: #6b7280;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { display: flex; height: 100vh; background-color: var(--bg-body); color: var(--text-main); overflow: hidden; }
+
+        /* --- SIDEBAR ELEGANTE --- */
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            display: flex; flex-direction: column;
+            padding: 30px 20px;
+            border-right: 1px solid #e5e7eb;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .brand { 
+            display: flex; align-items: center; gap: 15px; margin-bottom: 50px; padding: 0 10px;
+        }
+        .brand img { width: 45px; height: auto; filter: drop-shadow(0 4px 6px rgba(99,102,241,0.3)); }
+        .brand span { font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+
+        .menu-item {
+            display: flex; align-items: center; gap: 15px;
+            padding: 16px 20px;
+            color: var(--text-light);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .menu-item:hover { background-color: #eef2ff; color: var(--primary); transform: translateX(5px); }
+        .menu-item.active { 
+            background: linear-gradient(90deg, var(--primary), var(--primary-light)); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+        .menu-item i { width: 24px; text-align: center; font-size: 1.2rem; }
+        
+        .logout-btn { margin-top: auto; color: var(--danger); background: #fef2f2; border: 1px solid #fee2e2; }
+        .logout-btn:hover { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-content { flex: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; }
+        
+        /* HERO BANNER IMPONENTE */
+        .hero-section {
+            background: linear-gradient(120deg, var(--primary) 0%, #2563eb 100%);
+            padding: 60px 50px 100px 50px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+        }
+        
+        /* Círculos decorativos animados */
+        .hero-section::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 300px; height: 300px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+        .hero-section::after {
+            content: ''; position: absolute; bottom: -30px; left: 50px; width: 150px; height: 150px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            animation: float 8s infinite ease-in-out reverse;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+        .hero-content h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; letter-spacing: -1px; }
+        .hero-content p { font-size: 1.1rem; opacity: 0.9; font-weight: 300; }
+        .user-pill { background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; backdrop-filter: blur(5px); margin-left: 10px; border: 1px solid rgba(255,255,255,0.3); }
+
+        /* CONTENEDOR FLOTANTE */
+        .content-wrapper { padding: 0 50px 50px 50px; margin-top: -60px; position: relative; z-index: 10; }
+
+        /* STATS CARDS */
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .stat-card {
+            background: var(--surface); padding: 25px; border-radius: 24px;
+            box-shadow: var(--shadow-card); border: 1px solid rgba(255,255,255,0.8);
+            display: flex; align-items: center; gap: 20px; transition: transform 0.3s ease;
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+        .stat-icon { width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; }
+        .icon-blue { background: #e0e7ff; color: var(--primary); }
+        .icon-green { background: #dcfce7; color: var(--success); }
+        .icon-gold { background: #fef3c7; color: var(--accent); }
+        .stat-info h4 { font-size: 0.85rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .stat-info .val { font-size: 2rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+
+        /* SECCIONES */
+        .content-section { display: none; animation: fadeInUp 0.5s ease-out; }
+        .content-section.active { display: block; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ACORDEÓN MÓDULOS */
+        .module-container { margin-bottom: 25px; background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid #e5e7eb; }
+        .module-header { 
+            padding: 20px 30px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            background: white; transition: background 0.2s;
+        }
+        .module-header:hover { background: #f9fafb; }
+        .module-title { font-size: 1.2rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
+        .module-title::before { content:''; width: 6px; height: 24px; background: var(--primary); border-radius: 4px; }
+        .module-content { padding: 30px; background: #f8fafc; border-top: 1px solid #e5e7eb; display: none; }
+        .module-container.open .module-content { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+        .module-container.open .module-header i { transform: rotate(180deg); }
+
+        /* TARJETAS DE CURSO IMPONENTES */
+        .course-card {
+            background: var(--surface); border-radius: 20px; overflow: hidden;
+            box-shadow: var(--shadow-card); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; border: 1px solid #f1f5f9;
+            display: flex; flex-direction: column;
+        }
+        .course-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-hover); border-color: var(--primary-light); }
+        
+        .thumb-wrapper { height: 190px; overflow: hidden; position: relative; }
+        .thumb-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .course-card:hover .thumb-img { transform: scale(1.1); }
+        
+        /* Badges & Overlays */
+        .card-badge {
+            position: absolute; top: 15px; right: 15px;
+            padding: 6px 14px; border-radius: 30px;
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+            color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 2;
+        }
+        .bg-vid { background: var(--primary); } .bg-game { background: var(--accent); }
+        
+        .play-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.3); opacity: 0; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .course-card:hover .play-overlay { opacity: 1; }
+        .play-circle {
+            width: 60px; height: 60px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary); font-size: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transform: scale(0.5); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .course-card:hover .play-circle { transform: scale(1); }
+
+        .card-info { padding: 25px; flex: 1; display: flex; flex-direction: column; }
+        .cat-tag { font-size: 0.75rem; font-weight: 800; color: var(--secondary); text-transform: uppercase; margin-bottom: 8px; }
+        .card-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin-bottom: 20px; line-height: 1.4; flex: 1; }
+        
+        .btn-start {
+            width: 100%; padding: 14px; border-radius: 14px; border: none;
+            font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            font-size: 0.95rem;
+        }
+        .btn-action-vid { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(67, 56, 202, 0.3); }
+        .btn-action-vid:hover { background: var(--primary-light); transform: translateY(-2px); }
+        .btn-action-game { background: #fffbeb; color: #b45309; border: 2px solid #fcd34d; }
+        .btn-action-game:hover { background: #fcd34d; color: white; }
+
+        /* MODAL FULLSCREEN */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.95); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-window { width: 100%; max-width: 1100px; height: 90vh; background: white; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .modal-top { padding: 20px 30px; background: var(--surface); border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 1.2rem; font-weight: 700; color: var(--text-main); }
+        .close-icon { font-size: 1.8rem; cursor: pointer; color: var(--text-light); transition: 0.2s; } .close-icon:hover { color: var(--danger); transform: rotate(90deg); }
+        
+        .modal-content-area { flex: 1; background: #000; position: relative; display: flex; align-items: center; justify-content: center; overflow-y: auto; }
+        .modal-content-area.game-mode { background: #f8fafc; } /* Fondo claro para juegos */
+        
+        .video-wrapper { width: 100%; height: 100%; }
+        .video-wrapper iframe { width: 100%; height: 100%; border: none; }
+        
+        .modal-bottom { padding: 20px 30px; background: var(--surface); border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; }
+        .btn-exam { padding: 12px 30px; border-radius: 50px; border: none; font-weight: 700; cursor: not-allowed; background: #cbd5e1; color: white; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .btn-exam.ready { background: var(--success); cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+        .btn-exam.ready:hover { transform: scale(1.05); }
+
+        /* JUEGOS ESTILIZADOS */
+        .fill-container { background: white; padding: 50px; border-radius: 24px; box-shadow: var(--shadow-lg); text-align: center; max-width: 800px; width: 90%; }
+        .word-bank { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 40px; padding: 25px; background: #f1f5f9; border-radius: 16px; border: 2px dashed #cbd5e1; }
+        .draggable-word { background: white; padding: 10px 20px; border-radius: 12px; font-weight: 700; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: grab; border: 1px solid #e2e8f0; user-select: none; transition: 0.2s; }
+        .draggable-word:active { cursor: grabbing; transform: scale(0.95); }
+        .sentence-area { font-size: 1.5rem; line-height: 2.5; color: var(--text-main); }
+        .drop-zone { display: inline-flex; min-width: 120px; height: 45px; border-bottom: 3px solid #94a3b8; margin: 0 8px; vertical-align: bottom; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); transition: 0.3s; border-radius: 8px; background: rgba(255,255,255,0.5); }
+        .drop-zone.drag-over { background: #e0e7ff; border-color: var(--primary); transform: scale(1.05); }
+        
+        /* FLASHCARDS */
+        .flashcard { width: 500px; height: 300px; perspective: 1000px; cursor: pointer; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.8s; transform-style: preserve-3d; }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; border-radius: 24px; padding: 30px; text-align: center; box-shadow: var(--shadow-lg); }
+        .f-front { background: white; color: var(--text-main); border: 2px solid var(--primary); }
+        .f-back { background: var(--primary); color: white; transform: rotateY(180deg); }
+
+        /* RANKING TABLE */
+        .ranking-box { background: white; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-md); border: 1px solid #e5e7eb; }
+        .rank-item { display: flex; align-items: center; padding: 20px 30px; border-bottom: 1px solid #f1f5f9; }
+        .rank-item:last-child { border: none; }
+        .rank-item.me { background: #eff6ff; border-left: 5px solid var(--primary); }
+        .rank-pos { width: 50px; font-size: 1.5rem; font-weight: 800; color: #cbd5e1; text-align: center; }
+        .rank-pos.top { color: var(--accent); text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); }
+        .rank-info { flex: 1; font-weight: 600; margin-left: 20px; font-size: 1.1rem; }
+        .rank-score { font-weight: 800; color: var(--primary); font-size: 1.2rem; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand">
+            <img src="geincos.png" alt="Logo">
+            <span>Academy</span>
+        </div>
+        <div class="menu-list">
+            <div class="menu-item active" onclick="nav('home', this)">
+                <i class="fas fa-layer-group"></i> Mi Aprendizaje
+            </div>
+            <div class="menu-item" onclick="nav('ranking', this)">
+                <i class="fas fa-trophy"></i> Tabla de Líderes
+            </div>
+        </div>
+        <div class="menu-item logout-btn" onclick="logout()">
+            <i class="fas fa-power-off"></i> Cerrar Sesión
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1>¡Hola de nuevo, <span id="nombreUsuario">...</span>! <span class="user-pill" id="userGroup">...</span></h1>
+                <p>Continúa desarrollando tus habilidades. Tu progreso es impresionante.</p>
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            <div id="home" class="content-section active">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-blue"><i class="fas fa-book"></i></div>
+                        <div class="stat-text"><h4>Cursos</h4><div class="val" id="countCursos">--</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green"><i class="fas fa-chart-pie"></i></div>
+                        <div class="stat-text"><h4>Promedio</h4><div class="val" id="myAverage">--</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-gold"><i class="fas fa-crown"></i></div>
+                        <div class="stat-text"><h4>Ranking</h4><div class="val" id="myRank">--</div></div>
+                    </div>
+                </div>
+
+                <div id="coursesContainer">
+                    </div>
+            </div>
+
+            <div id="ranking" class="content-section">
+                <h2 style="margin-bottom:25px; color:var(--text-dark)">🏆 Top Estudiantes - <span id="groupName"></span></h2>
+                <div class="ranking-box" id="rankingContainer">
+                    <p style="padding:30px; text-align:center; color:var(--text-light)">Cargando líderes...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="mainModal">
+        <div class="modal-window">
+            <div class="modal-top">
+                <div class="modal-title" id="modalTitle">Reproductor</div>
+                <i class="fas fa-times close-icon" onclick="closeModal()"></i>
+            </div>
+            <div class="modal-content-area" id="playerArea">
+                </div>
+            <div class="modal-bottom" id="videoFooter" style="display:none">
+                <button id="btnExam" class="btn-exam" onclick="startExam()">
+                    <i class="fas fa-lock"></i> <span>Espera...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx4WFS3Gndn-6T6_ikhb3sbLyVNnwpHjBtq82uDYWlbdiom2PCOzTqCp6-mSDcy0YgNPg/exec';
+        const currentUser = localStorage.getItem('usuarioActual');
+        if(!currentUser) window.location.href = 'index.html';
+        document.getElementById('nombreUsuario').innerText = currentUser;
+
+        let currentGameData = [], currentStep = 0, currentCourseTitle = "", examQuestions = [], timerInterval;
+
+        window.onload = () => { loadContent(); loadRankingData(); };
+
+        function nav(id, el) {
+            document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function loadContent() {
+            let f = new FormData(); f.append('action', 'readCourses');
+            let r = await fetch(API_URL, {method:'POST', body:f});
+            let d = await r.json();
+            
+            const container = document.getElementById('coursesContainer');
+            container.innerHTML = '';
+            
+            let modules = {};
+            d.data.forEach(c => {
+                let m = c.modulo || "General";
+                if(!modules[m]) modules[m] = [];
+                modules[m].push(c);
+            });
+            document.getElementById('countCursos').innerText = d.data.length;
+
+            // BANCO DE IMÁGENES ELEGANTES PARA FALLBACK
+            const covers = {
+                'video': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'game': 'https://images.unsplash.com/photo-1553481187-be93c21490a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                'completar': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            };
+
+            for(let m in modules) {
+                let cardsHtml = '';
+                modules[m].forEach(c => {
+                    let isVid = c.tipo === 'video';
+                    let typeLabel = isVid ? 'Video Clase' : 'Dinámica Lúdica';
+                    let typeClass = isVid ? 'bg-vid' : 'bg-game';
+                    let icon = isVid ? 'play' : 'gamepad';
+                    let btnText = isVid ? 'Ver Clase' : 'Jugar Ahora';
+                    let btnStyle = isVid ? 'btn-action-vid' : 'btn-action-game';
+                    
+                    // Lógica inteligente de portada
+                    let thumb = isVid ? covers.video : covers.game;
+                    if(c.tipo === 'completar') thumb = covers.completar;
+                    
+                    if(isVid && c.video) {
+                        let vidId = getYouTubeID(c.video);
+                        if(vidId) thumb = `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+                    }
+
+                    cardsHtml += `
+                    <div class="course-card">
+                        <div class="thumb-wrapper">
+                            <img src="${thumb}" class="thumb-img" onerror="this.src='${covers.video}'">
+                            <span class="card-badge ${typeClass}"><i class="fas fa-${icon}"></i> ${typeLabel}</span>
+                            <div class="play-overlay"><div class="play-circle"><i class="fas fa-${icon}"></i></div></div>
+                        </div>
+                        <div class="card-info">
+                            <span class="cat-tag">${c.categoria}</span>
+                            <h3 class="card-title">${c.titulo}</h3>
+                            <button class="btn-start ${btnStyle}" onclick="launch('${c.tipo}', '${c.video}', '${encodeURIComponent(c.dataJuego||'')}', '${c.titulo}')">
+                                ${btnText} <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>`;
+                });
+                
+                container.innerHTML += `
+                <div class="module-container open">
+                    <div class="module-header" onclick="this.parentElement.classList.toggle('open')">
+                        <div class="module-title">${m}</div>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </div>
+                    <div class="module-content">${cardsHtml}</div>
+                </div>`;
+            }
+        }
+
+        async function loadRankingData() {
+            let f = new FormData(); f.append('action', 'readUsers');
+            let r = await fetch(API_URL, {method:'POST', body:f}); let d = await r.json();
+            let me = d.data.find(u => u.usuario === currentUser);
+            if(!me) return;
+            
+            document.getElementById('userGroup').innerText = me.etiqueta || "General";
+            document.getElementById('groupName').innerText = me.etiqueta || "General";
+            document.getElementById('myAverage').innerText = me.promedio;
+
+            let grpUsers = d.data.filter(u => (u.etiqueta||"General") == (me.etiqueta||"General") && u.rol!='admin');
+            grpUsers.sort((a,b)=>b.promedio - a.promedio);
+            
+            let rank = grpUsers.findIndex(u=>u.usuario===currentUser) + 1;
+            document.getElementById('myRank').innerText = "#"+rank;
+
+            let list = document.getElementById('rankingContainer');
+            list.innerHTML = '';
+            grpUsers.forEach((u, i) => {
+                let isMe = u.usuario===currentUser ? 'me' : '';
+                let pos = i+1;
+                let icon = pos===1 ? '👑' : (pos===2?'🥈':(pos===3?'🥉':pos));
+                let cls = pos<=3 ? 'top' : '';
+                
+                list.innerHTML += `
+                <div class="rank-item ${isMe}">
+                    <div class="rank-pos ${cls}">${icon}</div>
+                    <div class="rank-info">${u.usuario}</div>
+                    <div class="rank-score">${u.promedio} pts</div>
+                </div>`;
+            });
+        }
+
+        function launch(type, url, data, title) {
+            currentCourseTitle = title; document.getElementById('modalTitle').innerText = title;
+            const area = document.getElementById('playerArea');
+            const footer = document.getElementById('videoFooter');
+            area.innerHTML = ''; footer.style.display = 'none';
+            document.getElementById('mainModal').style.display = 'flex';
+            
+            area.className = type === 'video' ? 'modal-content-area' : 'modal-content-area game-mode';
+
+            if(type === 'video') {
+                footer.style.display = 'flex';
+                let vidId = getYouTubeID(url);
+                if(vidId) {
+                    area.innerHTML = `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${vidId}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`;
+                } else if(url.includes("vimeo")) {
+                    let vid = url.split("/").pop();
+                    area.innerHTML = `<div class="video-wrapper"><iframe src="https://player.vimeo.com/video/${vid}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe></div>`;
+                } else {
+                    area.innerHTML = `<div class="video-wrapper"><iframe src="${url}" allow="autoplay; fullscreen"></iframe></div>`;
+                }
+                startTimer(); loadExam(title);
+            } else {
+                try {
+                    currentGameData = JSON.parse(decodeURIComponent(data));
+                    currentStep = 0;
+                    if(type === 'completar') renderFillGame(currentGameData.text, area);
+                    else if(type === 'flashcard') renderFlashcard(area);
+                    // Otros juegos...
+                } catch(e) { area.innerHTML = '<h3 style="color:#999">Error cargando actividad</h3>'; }
+            }
+        }
+
+        // --- JUEGO COMPLETAR (Drag & Drop) ---
+        function renderFillGame(text, container) {
+            let parts = text.split(/(\[.*?\])/); let words = [], html = "";
+            parts.forEach(p => {
+                if(p.startsWith('[') && p.endsWith(']')) {
+                    let w = p.slice(1,-1); words.push(w);
+                    html += `<span class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" data-ans="${w}"></span>`;
+                } else html += p;
+            });
+            words.sort(()=>Math.random()-0.5);
+            
+            container.innerHTML = `
+            <div class="fill-container">
+                <h3 style="color:var(--primary); margin-bottom:25px; font-size:1.5rem">Completa la frase correctamente</h3>
+                <div class="word-bank">
+                    ${words.map(w=>`<div class="draggable-word" draggable="true" ondragstart="drag(event)" id="d-${w}">${w}</div>`).join('')}
+                </div>
+                <div class="sentence-area">${html}</div>
+                <button class="btn-start btn-game" style="width:200px; margin:30px auto 0" onclick="checkFill()">Verificar</button>
+            </div>`;
+        }
+
+        window.allowDrop = e => e.preventDefault();
+        window.drag = e => e.dataTransfer.setData("t", e.target.id);
+        window.drop = e => {
+            e.preventDefault(); let id = e.dataTransfer.getData("t"); let el = document.getElementById(id);
+            if(e.target.innerText === "") {
+                e.target.innerText = el.innerText; e.target.style.background="#e0e7ff"; e.target.style.border="none";
+                el.style.display='none';
+            }
+        };
+        window.checkFill = () => {
+            let zones = document.querySelectorAll('.drop-zone'); let ok=0;
+            zones.forEach(z=>{ if(z.innerText===z.getAttribute('data-ans')){z.style.color="green"; ok++;} else z.style.color="red"; });
+            if(ok===zones.length) alert("¡Excelente! 🎉");
+        };
+
+        // --- FLASHCARDS ---
+        function renderFlashcard(area) {
+            if(currentStep >= currentGameData.length) currentStep=0; let item = currentGameData[currentStep];
+            area.innerHTML = `
+            <div style="text-align:center">
+                <div class="flashcard" onclick="this.classList.toggle('flipped')">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-face f-front">${item.q}</div>
+                        <div class="flashcard-face f-back">${item.a}</div>
+                    </div>
+                </div>
+                <button class="btn-start" style="width:150px; margin:30px auto" onclick="currentStep++; renderFlashcard(document.getElementById('playerArea'))">Siguiente</button>
+            </div>`;
+        }
+
+        // --- EXAMEN ---
+        function startTimer() {
+            let t=10; const b=document.getElementById('btnExam');
+            b.className='btn-exam'; b.disabled=true;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(()=>{
+                b.innerHTML = `<i class="fas fa-clock"></i> <span>Espera ${t}s...</span>`; t--;
+                if(t<0) { clearInterval(timerInterval); b.disabled=false; b.className='btn-exam ready'; b.innerHTML='<i class="fas fa-edit"></i> Realizar Examen'; b.onclick=showExam; }
+            },1000);
+        }
+        async function loadExam(t) {
+            let f=new FormData(); f.append('action','getExam'); f.append('Curso',t);
+            let r=await fetch(API_URL,{method:'POST',body:f}); let d=await r.json(); examQuestions=d.data;
+        }
+        function showExam() {
+            const area = document.getElementById('playerArea');
+            document.getElementById('videoFooter').style.display='none';
+            area.className = 'modal-content-area game-mode';
+            
+            if(!examQuestions.length) { area.innerHTML='<h3 style="color:#999">Sin preguntas asignadas.</h3>'; return; }
+            
+            let h = `<div style="width:100%; max-width:700px; padding:20px;">`;
+            examQuestions.forEach((q,i)=>{
+                h+=`<div style="background:white; padding:20px; border-radius:15px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05)">
+                    <h4 style="margin-bottom:15px; color:var(--text-dark)">${i+1}. ${q.pregunta}</h4>
+                    <label style="display:block; padding:10px; border-radius:8px; cursor:pointer; transition:0.2s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'"><input type="radio" name="q${i}" value="${q.opciones[0]}"> ${q.opciones[0]}</label>
+                    <label style="display:block; padding:10px; border-radius:8px; cursor:pointer; transition:0.2s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'"><input type="radio" name="q${i}" value="${q.opciones[1]}"> ${q.opciones[1]}</label>
+                    <label style="display:block; padding:10px; border-radius:8px; cursor:pointer; transition:0.2s" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'"><input type="radio" name="q${i}" value="${q.opciones[2]}"> ${q.opciones[2]}</label>
+                </div>`;
+            });
+            h+=`<button class="btn-start" onclick="submitExam()">Enviar Examen</button></div>`;
+            area.innerHTML = h;
+        }
+        function submitExam() {
+            let s=0; examQuestions.forEach((q,i)=>{ let o=document.querySelector(`input[name="q${i}"]:checked`); if(o && o.value===q.correcta) s++; });
+            let final = Math.round((s/examQuestions.length)*20);
+            alert('Calificación: '+final+'/20');
+            let fd=new FormData(); fd.append('action','saveGrade'); fd.append('Usuario',currentUser); fd.append('Curso',currentCourseTitle); fd.append('Nota',final);
+            fetch(API_URL,{method:'POST',body:fd}).then(()=>{ closeModal(); loadRankingData(); });
+        }
+
+        function getYouTubeID(url) { if(!url) return null; const r = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/; const m = url.match(r); return (m && m[2].length === 11) ? m[2] : null; }
+        function closeModal() { document.getElementById('mainModal').style.display='none'; document.getElementById('playerArea').innerHTML=''; clearInterval(timerInterval); }
+        function logout() { if(confirm("¿Cerrar sesión?")) { localStorage.removeItem('usuarioActual'); location.href='index.html'; } }
+    </script>
+</body>
+</html>
