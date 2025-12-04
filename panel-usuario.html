@@ -191,7 +191,13 @@
         .close-icon { font-size: 1.8rem; cursor: pointer; color: var(--text-light); transition: 0.2s; } .close-icon:hover { color: var(--danger); transform: rotate(90deg); }
         
         .modal-content-area { flex: 1; background: #000; position: relative; display: flex; align-items: center; justify-content: center; overflow-y: auto; }
-        .modal-content-area.game-mode { background: #f8fafc; } /* Fondo claro para juegos */
+        
+        /* CORRECCIÓN DE SCROLL: Se añade display block y padding */
+        .modal-content-area.game-mode { 
+            background: #f8fafc; 
+            display: block; 
+            padding-top: 40px; 
+        } 
         
         .video-wrapper { width: 100%; height: 100%; }
         .video-wrapper iframe { width: 100%; height: 100%; border: none; }
@@ -202,7 +208,7 @@
         .btn-exam.ready:hover { transform: scale(1.05); }
 
         /* JUEGOS ESTILIZADOS */
-        .fill-container { background: white; padding: 50px; border-radius: 24px; box-shadow: var(--shadow-lg); text-align: center; max-width: 800px; width: 90%; }
+        .fill-container { background: white; padding: 50px; border-radius: 24px; box-shadow: var(--shadow-lg); text-align: center; max-width: 800px; width: 90%; margin: 0 auto; } /* Centrado también aquí */
         .word-bank { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 40px; padding: 25px; background: #f1f5f9; border-radius: 16px; border: 2px dashed #cbd5e1; }
         .draggable-word { background: white; padding: 10px 20px; border-radius: 12px; font-weight: 700; color: var(--primary); box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: grab; border: 1px solid #e2e8f0; user-select: none; transition: 0.2s; }
         .draggable-word:active { cursor: grabbing; transform: scale(0.95); }
@@ -310,7 +316,9 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx4WFS3Gndn-6T6_ikhb3sbLyVNnwpHjBtq82uDYWlbdiom2PCOzTqCp6-mSDcy0YgNPg/exec';
+        // Recuerda que aquí debes mantener TU URL actual, la que ya te funcionaba.
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxqqV6lXoDWI5IQbC_UL4spYCup5-erGzkgtBq_sV58D7ckBo12U3u7YpMdgcFmBqNlMQ/exec';
+        
         const currentUser = localStorage.getItem('usuarioActual');
         if(!currentUser) window.location.href = 'index.html';
         document.getElementById('nombreUsuario').innerText = currentUser;
@@ -342,7 +350,6 @@
             });
             document.getElementById('countCursos').innerText = d.data.length;
 
-            // BANCO DE IMÁGENES ELEGANTES PARA FALLBACK
             const covers = {
                 'video': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                 'game': 'https://images.unsplash.com/photo-1553481187-be93c21490a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
@@ -359,7 +366,6 @@
                     let btnText = isVid ? 'Ver Clase' : 'Jugar Ahora';
                     let btnStyle = isVid ? 'btn-action-vid' : 'btn-action-game';
                     
-                    // Lógica inteligente de portada
                     let thumb = isVid ? covers.video : covers.game;
                     if(c.tipo === 'completar') thumb = covers.completar;
                     
@@ -456,7 +462,6 @@
                     currentStep = 0;
                     if(type === 'completar') renderFillGame(currentGameData.text, area);
                     else if(type === 'flashcard') renderFlashcard(area);
-                    // Otros juegos...
                 } catch(e) { area.innerHTML = '<h3 style="color:#999">Error cargando actividad</h3>'; }
             }
         }
@@ -534,7 +539,9 @@
             
             if(!examQuestions.length) { area.innerHTML='<h3 style="color:#999">Sin preguntas asignadas.</h3>'; return; }
             
-            let h = `<div style="width:100%; max-width:700px; padding:20px;">`;
+            // CORRECCIÓN: Se añade margin: 0 auto para centrar el formulario
+            let h = `<div style="width:100%; max-width:700px; padding:20px; margin: 0 auto;">`;
+            
             examQuestions.forEach((q,i)=>{
                 h+=`<div style="background:white; padding:20px; border-radius:15px; margin-bottom:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05)">
                     <h4 style="margin-bottom:15px; color:var(--text-dark)">${i+1}. ${q.pregunta}</h4>
