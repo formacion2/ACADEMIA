@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Geincos Admin | Gestión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #4338ca; --primary-light: #6366f1; --bg-body: #f1f5f9; --surface: #ffffff; --text-main: #0f172a; --text-muted: #64748b; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --border: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; z-index: 50; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; padding-left: 8px; }
+        .brand img { width: 36px; } .brand span { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .menu-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 10px; margin-top: 20px; padding-left: 10px; }
+        .menu-item { padding: 12px 16px; color: var(--text-muted); border-radius: 8px; cursor: pointer; margin-bottom: 4px; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; text-decoration: none; }
+        .menu-item:hover { background: #eef2ff; color: var(--primary); }
+        .menu-item.active { background: var(--primary); color: white; }
+        .main-content { flex: 1; padding: 32px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .page-title h2 { font-size: 1.8rem; font-weight: 800; }
+        .btn-primary { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-success { background: var(--success); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-danger { background: #fee2e2; color: var(--danger); padding: 5px 10px; border-radius: 8px; border: none; cursor: pointer; }
+        .table-container { background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 40px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; text-align: left; padding: 12px 20px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        td { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: middle; }
+        .content-section { display: none; animation: fadeIn 0.3s ease; } .content-section.active { display: block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: var(--surface); width: 500px; padding: 30px; border-radius: 20px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: #e0e7ff; color: var(--primary); }
+        
+        /* EDITOR SIMULADOR */
+        .edit-card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .step-badge { background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .option-row { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .btn-mini { border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-size: 0.9rem; background: #fee2e2; color: #b91c1c; }
+        .btn-add-opt { background: #f0f9ff; color: #0284c7; border: 1px dashed #bae6fd; width: 100%; margin-top: 10px; }
+        .check-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .check-item:hover { background: #f8fafc; }
+        .check-item input { transform: scale(1.3); cursor: pointer; accent-color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand"><img src="geincos.png" alt="Admin"> <span>Admin</span></div>
+        <div class="menu-label">ANALÍTICA</div>
+        <a href="dashboard.html" class="menu-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <div class="menu-item" onclick="nav('reports', this); loadReports()"><i class="fas fa-file-alt"></i> Reportes</div>
+        <div class="menu-item" onclick="nav('duel-results', this); loadAdminDuels()"><i class="fas fa-trophy"></i> Resultados Duelos</div>
+        
+        <div class="menu-label">GESTIÓN</div>
+        <div class="menu-item active" onclick="nav('users', this); loadUsers()"><i class="fas fa-users"></i> Usuarios</div>
+        <div class="menu-item" onclick="nav('courses', this); loadCourses()"><i class="fas fa-layer-group"></i> Materiales</div>
+        <div class="menu-item" onclick="nav('exams', this); loadCoursesSelect()"><i class="fas fa-clipboard-check"></i> Evaluaciones</div>
+        <div class="menu-item" onclick="nav('simulador', this); loadSimulatorsList()"><i class="fas fa-gamepad"></i> Simuladores</div>
+        <div class="menu-item" style="margin-top:auto; color:var(--danger)" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header"><h2 id="pageTitle">Gestión de Usuarios</h2></div>
+
+        <div id="users" class="content-section active">
+            <div class="table-container">
+                <div style="padding:20px; display:flex; justify-content:flex-end"><button class="btn-primary" onclick="downloadUsersExcel()">Exportar Excel</button></div>
+                <table><thead><tr><th>Usuario</th><th>Grupo</th><th>DNI</th><th>Acciones</th></tr></thead><tbody id="tbodyUsers"></tbody></table>
+            </div>
+        </div>
+
+        <div id="courses" class="content-section">
+            <div class="table-container">
+                <div style="padding:20px; display:flex; justify-content:flex-end"><button class="btn-primary" onclick="openModal('modalCourse','create')">+ Nuevo Material</button></div>
+                <table><thead><tr><th>Módulo</th><th>Título</th><th>Tipo</th><th>Acciones</th></tr></thead><tbody id="tbodyCourses"></tbody></table>
+            </div>
+        </div>
+
+        <div id="reports" class="content-section">
+            <div class="table-container">
+                <div style="padding:20px; display:flex; gap: 10px; align-items: center; justify-content:space-between">
+                    <select id="filterGroup" class="form-control" style="width:200px; margin:0" onchange="filterTable()"><option value="all">Todos</option></select>
+                    <div style="display:flex; gap:10px"><button class="btn-primary" onclick="downloadExcelReport()">Descargar Reporte</button><button class="btn-success" onclick="downloadDetailedAnswers()">Descargar Respuestas</button></div>
+                </div>
+                <table><thead><tr><th>Fecha</th><th>Grupo</th><th>Usuario</th><th>Actividad</th><th>Nota</th></tr></thead><tbody id="tbodyReports"></tbody></table>
+            </div>
+        </div>
+
+        <div id="duel-results" class="content-section">
+            <div class="table-container">
+                <div style="padding:20px;"><h3>Historial de Batallas PvP</h3></div>
+                <table><thead><tr><th>Fecha</th><th>Grupo</th><th>Retador vs Oponente</th><th>Marcador</th><th>Ganador</th></tr></thead><tbody id="tbodyDuelsAdmin"></tbody></table>
+            </div>
+        </div>
+        
+        <div id="exams" class="content-section">
+            <div class="table-container">
+                <div style="padding:20px; display:flex; gap:10px">
+                    <select id="selCourse" class="form-control" style="width:300px; margin:0" onchange="loadQ()"><option>Selecciona...</option></select>
+                    <button class="btn-primary" onclick="openQModal('create')">+ Crear Pregunta</button>
+                </div>
+                <table><thead><tr><th>Puntos</th><th>Pregunta</th><th>Correcta</th><th>Acción</th></tr></thead><tbody id="tbodyQuestions"></tbody></table>
+            </div>
+        </div>
+
+        <div id="simulador" class="content-section">
+            <div class="table-container">
+                <div style="padding:20px; display:flex; justify-content:flex-end"><button class="btn-primary" onclick="openSimCreator('create')">+ Crear Simulador</button></div>
+                <table><thead><tr><th>Título</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="tbodySims"></tbody></table>
+            </div>
+        </div>
+
+        <div id="simulador-editor" class="content-section" style="display:none;">
+            <div style="background:var(--surface); padding:20px; border-radius:16px; border:1px solid var(--border)">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
+                    <button class="btn-danger" style="font-size:0.8rem" onclick="cancelSimEdit()">← Volver</button>
+                    <h3 id="simEditorTitle">Editando Simulador</h3>
+                    <div style="display:flex; gap:10px">
+                        <button class="btn-primary" onclick="agregarNuevoPaso()" style="background:#3b82f6">＋ Nuevo Paso</button>
+                        <button class="btn-success" onclick="guardarSimulacionActual()">💾 Guardar</button>
+                    </div>
+                </div>
+                <input type="text" id="simTitleInput" class="form-control" placeholder="Título del Simulador (Ej: Atención Cobranzas)">
+                <input type="text" id="simDescInput" class="form-control" placeholder="Descripción breve">
+                <hr style="margin:20px 0; border-top:1px solid #eee;">
+                <div id="editor-content-area" style="max-height:65vh; overflow-y:auto; padding-right:10px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalUser"><div class="modal-box"><span onclick="closeModals()" style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:1.5rem">&times;</span><h3>Editar Usuario</h3><br><input type="hidden" id="uUserOrigin"><input type="text" id="uDNI" class="form-control" placeholder="DNI"><input type="text" id="uTag" class="form-control" placeholder="Grupo"><input type="text" id="uPass" class="form-control" placeholder="Nueva Clave"><button class="btn-primary" style="width:100%" onclick="saveU()">Guardar</button></div></div>
+    
+    <div class="modal-overlay" id="modalCourse"><div class="modal-box"><span onclick="closeModals()" style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:1.5rem">&times;</span><h3>Material</h3><br><input type="hidden" id="cMode" value="create"><input type="hidden" id="cTitleOrigin"><input type="text" id="cModule" class="form-control" placeholder="Módulo"><input type="text" id="cTitle" class="form-control" placeholder="Título"><input type="text" id="cDesc" class="form-control" placeholder="Descripción"><select id="cCat" class="form-control"><option>BANCO</option><option>AUNA</option><option>COBRANZAS</option></select>
+    <select id="cType" class="form-control" onchange="toggleB()">
+        <option value="video">Video (YouTube/Drive)</option>
+        <option value="imagen">Imagen (JPG/PNG)</option>
+        <option value="pdf">Documento PDF</option>
+        <option value="ppt">Presentación (PPT/Slides)</option>
+        <option value="audio">Audio (MP3)</option>
+        <option value="flashcard">Juego Flashcards</option>
+        <option value="completar">Juego Completar</option>
+    </select>
+    <div id="vidSec"><input type="text" id="cVideo" class="form-control" placeholder="Pegar Link del Archivo (Drive/Web)"></div>
+    <div id="gameSec" style="display:none; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:10px"><div id="gameItems"></div><button class="btn-primary" style="font-size:0.8rem; width:100%" onclick="addGameItem()">+ Ítem</button><div id="areaCompletar" style="display:none"><textarea id="gText" class="form-control" placeholder="Frase [oculta]"></textarea></div></div><button class="btn-primary" style="width:100%" onclick="saveMat()">Guardar</button></div></div>
+    
+    <div class="modal-overlay" id="modalQ"><div class="modal-box"><span onclick="closeModals()" style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:1.5rem">&times;</span><h3>Pregunta</h3><br><input type="hidden" id="qMode" value="create"><input type="hidden" id="qOriginal"><input type="number" id="qPoints" class="form-control" placeholder="Puntaje (ej: 4)" value="2"><input type="text" id="qTxt" class="form-control" placeholder="Pregunta"><input type="text" id="op1" class="form-control" placeholder="A"><input type="text" id="op2" class="form-control" placeholder="B"><input type="text" id="op3" class="form-control" placeholder="C"><select id="correct" class="form-control"><option value="op1">A</option><option value="op2">B</option><option value="op3">C</option></select><button class="btn-primary" style="width:100%" onclick="saveQ()">Guardar</button></div></div>
+    <div class="modal-overlay" id="modalAssign"><div class="modal-box"><span onclick="closeModals()" style="position:absolute; top:15px; right:15px; cursor:pointer; font-size:1.5rem">&times;</span><h3>Asignar Cursos</h3><p style="color:#666; margin-bottom:15px">Asignando a: <b id="assignUserTitle" style="color:var(--primary)"></b></p><div id="assignList" style="max-height:300px; overflow-y:auto; border:1px solid #eee; padding:10px; margin-bottom:15px; border-radius:8px;"></div><button class="btn-primary" style="width:100%" onclick="saveAssignments()">Guardar Asignaciones</button></div></div>
+
+    <script>
+        // --- TU URL DE SCRIPT ---
+        const API = 'https://script.google.com/macros/s/AKfycbzDUpNjbPMItepTxZMP6a9398qpwD2vCg96UZFEoRJ_Uom6RIwydkd6BtwdzNhwusT5sA/exec';
+        
+        let globalReportData = [];
+        let datosEditor = [];
+        let currentAssignUser = "";
+        let currentSimMode = 'create';
+        let currentSimTitleOrig = '';
+
+        function nav(id, el) { document.querySelectorAll('.content-section').forEach(s=>s.style.display='none'); document.getElementById(id).style.display='block'; document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); el.classList.add('active'); document.getElementById('pageTitle').innerText=id.toUpperCase(); }
+        function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m=>m.style.display='none'); }
+        function openModal(id, mode) { document.getElementById(id||'modalCourse').style.display='flex'; if(!id) toggleB(); if(mode=='create'){document.getElementById('cMode').value='create'; document.getElementById('cTitle').value=''; document.getElementById('cVideo').value=''; document.getElementById('gameItems').innerHTML='';} }
+        function logout() { if(confirm("¿Salir?")) { localStorage.removeItem('usuarioActual'); window.location.href='index.html'; } }
+        function post(a,d,c){ let f=new FormData(); f.append('action',a); for(let k in d)f.append(k,d[k]); fetch(API,{method:'POST', body:f}).then(r=>r.json()).then(c); }
+        window.onload = initAll;
+        function initAll() { loadUsers(); loadCourses(); loadCoursesSelect(); }
+
+        function loadAdminDuels() { document.getElementById('tbodyDuelsAdmin').innerHTML='<tr><td colspan="5">Cargando...</td></tr>'; post('getAllDuels',{},d=>{ let h=''; if(d.data.length===0)h='<tr><td colspan="5">Sin duelos</td></tr>'; else d.data.forEach(x=>{ h+=`<tr><td>${new Date(x.fecha).toLocaleDateString()}</td><td><span class="badge">${x.grupo}</span></td><td>${x.retador} vs ${x.oponente}</td><td>${x.scoreR}-${x.scoreO}</td><td>${x.ganador}</td></tr>`;}); document.getElementById('tbodyDuelsAdmin').innerHTML=h; }); }
+        function loadUsers() { post('readUsers',{},d=>{ let h=''; d.data.forEach(u=>{ if(u.rol!='admin') { h+=`<tr><td>${u.usuario}</td><td><span class="badge">${u.etiqueta||"-"}</span></td><td>${u.dni}</td><td style="display:flex; gap:5px"><button class="btn-primary" style="padding:5px 10px; font-size:0.8rem; background:#3b82f6" onclick="openAssignModal('${u.usuario}')"><i class="fas fa-book-reader"></i></button><button class="btn-primary" style="padding:5px 10px; font-size:0.8rem; background:#6b7280" onclick="editU('${u.usuario}','${u.dni}','${u.etiqueta}')"><i class="fas fa-edit"></i></button><button class="btn-danger" style="padding:5px 10px; font-size:0.8rem" onclick="delU('${u.usuario}')"><i class="fas fa-trash"></i></button></td></tr>`; }}); document.getElementById('tbodyUsers').innerHTML=h; }); }
+        function openAssignModal(user) { currentAssignUser = user; document.getElementById('assignUserTitle').innerText = user; document.getElementById('assignList').innerHTML = '<p>Cargando cursos...</p>'; openModal('modalAssign'); post('readCourses', {}, allCourses => { post('getUserAssignments', {Usuario: user}, userCourses => { let assignedSet = new Set(userCourses.data); let h = ''; let list = allCourses.data; if(list.length === 0) h = '<p>No hay cursos creados.</p>'; else { list.forEach(c => { let checked = assignedSet.has(c.titulo) ? 'checked' : ''; h += `<label class="check-item"><input type="checkbox" value="${c.titulo}" ${checked}><span>${c.titulo} <small style="color:#666">(${c.tipo})</small></span></label>`; }); } document.getElementById('assignList').innerHTML = h; }); }); }
+        function saveAssignments() { let selected = []; document.querySelectorAll('#assignList input:checked').forEach(cb => selected.push(cb.value)); post('updateAssignments', { Usuario: currentAssignUser, Cursos: JSON.stringify(selected) }, () => { alert('¡Asignaciones actualizadas!'); closeModals(); }); }
+        function editU(u,d,t){ document.getElementById('uUserOrigin').value=u; document.getElementById('uDNI').value=d; document.getElementById('uTag').value=t; openModal('modalUser'); }
+        function saveU(){ post('editUser',{UsuarioOriginal:document.getElementById('uUserOrigin').value, NuevoDNI:document.getElementById('uDNI').value, NuevaEtiqueta:document.getElementById('uTag').value, NuevoPass:document.getElementById('uPass').value},()=>{alert('Guardado'); closeModals(); loadUsers();}); }
+        function delU(u){ if(confirm("¿Borrar?")) post('deleteUser',{Usuario:u},loadUsers); }
+        function downloadUsersExcel(){ post('getFullReport',{},res=>{ let csv='\uFEFF"Usuario";"Grupo";"DNI";"Promedio"\n'; res.data.forEach(r=>{csv+=`"${r.usuario}";"${r.etiqueta}";"${r.dni}";"${r.promedio}"\n`}); let b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="Usuarios.csv"; a.click(); }); }
+        function loadCourses() { post('readCourses',{},d=>{ let h=''; d.data.sort((a,b)=>a.modulo.localeCompare(b.modulo)); d.data.forEach(c=>{ if(c.tipo!='simulador'){ h+=`<tr><td><b>${c.modulo}</b></td><td>${c.titulo}</td><td><span class="badge">${c.tipo}</span></td><td><button class="btn-primary" style="padding:5px 10px" onclick="prepareEditCourse('${c.titulo}','${c.descripcion}','${c.video}','${c.categoria}','${c.modulo}','${c.tipo}','${encodeURIComponent(c.dataJuego||'')}')"><i class="fas fa-edit"></i></button> <button class="btn-danger" style="padding:5px 10px" onclick="delC('${c.titulo}')"><i class="fas fa-trash"></i></button></td></tr>`; }}); document.getElementById('tbodyCourses').innerHTML=h; }); }
+        function prepareEditCourse(t, d, v, c, m, type, data) { document.getElementById('cMode').value = 'edit'; document.getElementById('cTitleOrigin').value = t; document.getElementById('cTitle').value = t; document.getElementById('cDesc').value = d; document.getElementById('cVideo').value = v; document.getElementById('cCat').value = c; document.getElementById('cModule').value = m; document.getElementById('cType').value = type; openModal('modalCourse'); toggleB(); if(type!=='video' && type!=='imagen' && type!=='pdf' && type!=='ppt' && type!=='audio')try{let j=JSON.parse(decodeURIComponent(data)); if(type==='completar')document.getElementById('gText').value=j.text; else{document.getElementById('gameItems').innerHTML=''; j.forEach(x=>addGameItem(x.q,x.a));}}catch(e){} }
+        function saveMat(){ let t=document.getElementById('cType').value, link="", json=""; if(['video','imagen','pdf','ppt','audio'].includes(t)) link=document.getElementById('cVideo').value; else if(t=='completar') json=JSON.stringify({text:document.getElementById('gText').value}); else { let arr=[]; document.querySelectorAll('.game-item').forEach(e=>{ let i=e.querySelectorAll('input'); arr.push({q:i[0].value, a:i[1].value}); }); json=JSON.stringify(arr); } let d={Titulo:document.getElementById('cTitle').value, Modulo:document.getElementById('cModule').value, Categoria:document.getElementById('cCat').value, Tipo:t, Video:link, DataJuego:json, Descripcion:document.getElementById('cDesc').value}; let m=document.getElementById('cMode').value; if(m==='create') post('saveCourse', d, ()=>{alert("Guardado"); closeModals(); loadCourses();}); else { d.TituloOriginal=document.getElementById('cTitleOrigin').value; post('editCourse', d, ()=>{alert("Actualizado"); closeModals(); loadCourses();}); } }
+        function delC(t){ if(confirm("¿Borrar?")) post('deleteCourse',{Titulo:t},loadCourses); }
+        function toggleB(){ let t=document.getElementById('cType').value; let isFile = ['video','imagen','pdf','ppt','audio'].includes(t); document.getElementById('vidSec').style.display=isFile?'block':'none'; document.getElementById('gameSec').style.display=isFile?'none':'block'; if(t=='completar'){document.getElementById('areaCompletar').style.display='block'; document.getElementById('listBuilder').style.display='none';}else if(!isFile){document.getElementById('areaCompletar').style.display='none'; document.getElementById('listBuilder').style.display='block'; if(document.getElementById('gameItems').innerHTML=='')addGameItem();} }
+        function addGameItem(q="",a=""){ let d=document.createElement('div'); d.className='game-item'; d.innerHTML=`<input class="form-control" placeholder="P" value="${q}" style="margin:0"><input class="form-control" placeholder="R" value="${a}" style="margin:0"><i class="fas fa-times" onclick="this.parentElement.remove()" style="color:red;cursor:pointer"></i>`; document.getElementById('gameItems').appendChild(d); }
+        function loadReports() { post('getFullReport', {}, res => { globalReportData = res.data; populateFilter(); filterTable(); }); }
+        function populateFilter() { let s = document.getElementById('filterGroup'); if(s.options.length <= 1) { [...new Set(globalReportData.map(u=>u.etiqueta||"General"))].forEach(g=>s.innerHTML+=`<option value="${g}">${g}</option>`); } }
+        function filterTable() { let v = document.getElementById('filterGroup').value; let d = v==='all' ? globalReportData : globalReportData.filter(u=>(u.etiqueta||"General")===v); let tb = document.getElementById('tbodyReports'); tb.innerHTML = ''; d.forEach(u => { u.detalles.forEach(det => { tb.innerHTML += `<tr><td>${new Date(det.f).toLocaleDateString()}</td><td>${u.etiqueta||"-"}</td><td>${u.usuario}</td><td>${det.c}</td><td>${det.n}</td></tr>`; }); }); }
+        function downloadExcelReport() { post('getFullReport', {}, res => { let csv='\uFEFF"Fecha";"Grupo";"Usuario";"Actividad";"Nota"\n'; res.data.forEach(u=>{u.detalles.forEach(d=>csv+=`"${new Date(d.f).toLocaleDateString()}";"${u.etiqueta}";"${u.usuario}";"${d.c}";"${d.n}"\n`)}); let b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="Reporte_Detalle.csv"; a.click(); }); }
+        function downloadDetailedAnswers() { let sg=document.getElementById('filterGroup').value; post('getDetailedReport', {}, res => { let csv='\uFEFF"Fecha";"Grupo";"Usuario";"Curso";"Nota";"Detalle_Respuestas"\n'; res.data.forEach(row => { if(sg === 'all' || row.g === sg) { let cd = (row.d || "").replace(/"/g, "'").replace(/(\r\n|\n|\r)/gm, " "); csv += `"${new Date(row.f).toLocaleDateString()}";"${row.g}";"${row.u}";"${row.c}";"${row.n}";"${cd}"\n`; } }); let b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Respuestas_${sg}.csv`; a.click(); }); }
+        function loadCoursesSelect() { post('readCourses', {}, data => { let s=document.getElementById('selCourse'); s.innerHTML='<option>Selecciona...</option>'; data.data.forEach(c=>{ let o=document.createElement('option'); o.value=c.titulo; o.innerText=c.titulo; s.appendChild(o); }); }); }
+        function loadQ(){ let c=document.getElementById('selCourse').value; if(!c)return; post('getExam',{Curso:c},d=>{ let tb=document.getElementById('tbodyQuestions'); tb.innerHTML=''; d.data.forEach(q=>{ tb.innerHTML+=`<tr><td><span class="badge" style="background:#e0e7ff; color:#4338ca; font-size:0.9rem">${q.puntaje||0} pts</span></td><td>${q.pregunta}</td><td>${q.correcta}</td><td style="display:flex; gap:5px"><button class="btn-primary" style="padding:5px 10px; font-size:0.8rem" onclick="prepareEditQ('${q.pregunta}','${q.opciones[0]}','${q.opciones[1]}','${q.opciones[2]}','${q.correcta}','${q.puntaje}')"><i class="fas fa-edit"></i></button><button class="btn-danger" style="padding:5px 10px; font-size:0.8rem" onclick="delQ('${c}','${q.pregunta}')"><i class="fas fa-trash"></i></button></td></tr>`; }); }); }
+        function openQModal(mode) { if(document.getElementById('selCourse').value=='Selecciona...') { alert('Selecciona curso'); return; } document.getElementById('qMode').value = mode; openModal('modalQ'); if(mode == 'create') { document.getElementById('qPoints').value='2'; document.getElementById('qTxt').value=''; document.getElementById('op1').value=''; document.getElementById('op2').value=''; document.getElementById('op3').value=''; } }
+        function prepareEditQ(txt, op1, op2, op3, corr, pts) { document.getElementById('qMode').value = 'edit'; document.getElementById('qOriginal').value = txt; document.getElementById('qTxt').value = txt; document.getElementById('op1').value = op1; document.getElementById('op2').value = op2; document.getElementById('op3').value = op3; document.getElementById('correct').value = (corr=='op1'?'op1':(corr=='op2'?'op2':'op3')); document.getElementById('qPoints').value = pts; openModal('modalQ'); }
+        function saveQ(){ let mode = document.getElementById('qMode').value; let d={ Curso:document.getElementById('selCourse').value, Pregunta:document.getElementById('qTxt').value, Op1:document.getElementById('op1').value, Op2:document.getElementById('op2').value, Op3:document.getElementById('op3').value, Correcta:document.getElementById('correct').value, Puntaje:document.getElementById('qPoints').value }; if (mode == 'create') post('saveQuestion',d,()=>{alert('Guardada'); closeModals(); loadQ();}); else { d.NuevaPregunta = d.Pregunta; d.PreguntaOriginal = document.getElementById('qOriginal').value; post('editQuestion',d,()=>{alert('Actualizada'); closeModals(); loadQ();}); } }
+        function delQ(c,p){ if(confirm("¿Borrar?")) post('deleteQuestion',{Curso:c, Pregunta:p},()=>loadQ()); }
+        
+        function loadSimulatorsList() { post('readCourses', {}, res => { let h = ''; let sims = res.data.filter(c => c.tipo === 'simulador'); if (sims.length === 0) h = '<tr><td colspan="3">No hay simuladores creados.</td></tr>'; else { sims.forEach(s => { let encodedData = encodeURIComponent(s.dataJuego); h += `<tr><td>${s.titulo}</td><td>${s.descripcion}</td><td><button class="btn-primary" style="padding:5px 10px" onclick="openSimCreator('edit', '${s.titulo}', '${s.descripcion}', '${encodedData}')"><i class="fas fa-edit"></i></button><button class="btn-danger" style="padding:5px 10px" onclick="delC('${s.titulo}')"><i class="fas fa-trash"></i></button></td></tr>`; }); } document.getElementById('tbodySims').innerHTML = h; }); }
+        function openSimCreator(mode, title='', desc='', data='') { currentSimMode = mode; currentSimTitleOrig = title; document.getElementById('simulador').style.display = 'none'; document.getElementById('simulador-editor').style.display = 'block'; document.getElementById('simTitleInput').value = title; document.getElementById('simDescInput').value = desc; if (mode === 'edit' && data) { try { datosEditor = JSON.parse(decodeURIComponent(data)); } catch(e) { datosEditor = []; } } else { datosEditor = [{ titulo: "INICIO", cliente: "Hola...", opciones: ["A", "B"], correcta: 0 }]; } renderizarEditor(); }
+        function cancelSimEdit() { document.getElementById('simulador-editor').style.display = 'none'; document.getElementById('simulador').style.display = 'block'; loadSimulatorsList(); }
+        function renderizarEditor() { const area = document.getElementById('editor-content-area'); area.innerHTML = ''; datosEditor.forEach((paso, indexPaso) => { const card = document.createElement('div'); card.className = 'edit-card'; let htmlOpciones = ''; paso.opciones.forEach((optTexto, indexOpt) => { const isChecked = (indexOpt == paso.correcta) ? 'checked' : ''; htmlOpciones += `<div class="option-row"><input type="radio" name="correcta-${indexPaso}" onchange="setCorrecta(${indexPaso}, ${indexOpt})" ${isChecked}><input type="text" class="form-control" style="margin:0" value="${optTexto}" oninput="updateOpcion(${indexPaso}, ${indexOpt}, this.value)"><button class="btn-mini" onclick="borrarOpcion(${indexPaso}, ${indexOpt})">🗑️</button></div>`; }); card.innerHTML = `<div class="card-header-row"><span class="step-badge">Paso ${indexPaso + 1}</span><button class="btn-mini" onclick="borrarPaso(${indexPaso})">Borrar Paso</button></div><label>Título:</label><input type="text" class="form-control" value="${paso.titulo}" oninput="updateCampo(${indexPaso}, 'titulo', this.value)"><label>Cliente:</label><input type="text" class="form-control" value="${paso.cliente}" oninput="updateCampo(${indexPaso}, 'cliente', this.value)"><label>Opciones (Marca la correcta):</label><div>${htmlOpciones}<button class="btn-mini btn-add-opt" onclick="agregarOpcion(${indexPaso})">＋ Opción</button></div><label>Error Msg:</label><input type="text" class="form-control" value="${paso.error||''}" oninput="updateCampo(${indexPaso}, 'error', this.value)">`; area.appendChild(card); }); }
+        function updateCampo(idx, campo, val) { datosEditor[idx][campo] = val; }
+        function updateOpcion(idx, optIdx, val) { datosEditor[idx].opciones[optIdx] = val; }
+        function setCorrecta(idx, optIdx) { datosEditor[idx].correcta = optIdx; }
+        function borrarPaso(idx) { if(confirm("¿Borrar paso?")) { datosEditor.splice(idx, 1); renderizarEditor(); } }
+        function agregarNuevoPaso() { datosEditor.push({ titulo: "NUEVO", cliente: "...", opciones: ["A", "B"], correcta: 0 }); renderizarEditor(); }
+        function borrarOpcion(idx, optIdx) { if (datosEditor[idx].opciones.length <= 2) return alert("Mínimo 2 opciones"); datosEditor[idx].opciones.splice(optIdx, 1); if(datosEditor[idx].correcta>=datosEditor[idx].opciones.length) datosEditor[idx].correcta=0; renderizarEditor(); }
+        function agregarOpcion(idx) { datosEditor[idx].opciones.push("Nueva opción"); renderizarEditor(); }
+        function guardarSimulacionActual() { let titulo = document.getElementById('simTitleInput').value; let desc = document.getElementById('simDescInput').value; if(!titulo) return alert("Pon un título"); let payload = { Titulo: titulo, Descripcion: desc, Data: JSON.stringify(datosEditor), Modo: currentSimMode }; if(currentSimMode === 'edit') payload.TituloOriginal = currentSimTitleOrig; post('saveSimulacion', payload, (res) => { if(res.result === 'success') { alert("✅ Simulador Guardado"); cancelSimEdit(); } else alert("Error: " + res.message); }); }
+    </script>
+</body>
+</html>
