@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Geincos Admin | Gestión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #4f46e5; --primary-light: #818cf8; --bg-body: #f3f4f6; --surface: #ffffff; 
+            --text-main: #1e293b; --text-muted: #64748b; --success: #10b981; --danger: #ef4444; 
+            --warning: #f59e0b; --border: #e2e8f0; 
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; z-index: 50; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; padding-left: 8px; }
+        .brand img { width: 36px; } .brand span { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+        .menu-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin: 20px 0 10px 10px; }
+        .menu-item { position: relative; padding: 12px 16px; color: var(--text-muted); border-radius: 8px; cursor: pointer; margin-bottom: 4px; font-weight: 500; display: flex; align-items: center; gap: 12px; transition: 0.2s; text-decoration: none; }
+        .menu-item:hover { background: #eef2ff; color: var(--primary); }
+        .menu-item.active { background: var(--primary); color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+        .menu-badge { position: absolute; right: 10px; background: var(--danger); color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; display: none; }
+
+        /* MAIN CONTENT */
+        .main-content { flex: 1; padding: 32px; overflow-y: auto; display: flex; flex-direction: column; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-title h2 { font-size: 1.8rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+        
+        .content-section { display: none; height: 100%; flex-direction: column; animation: fadeIn 0.3s ease; }
+        .content-section.active { display: flex; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+        /* TABLAS Y LISTAS */
+        .table-container { 
+            background: var(--surface); 
+            border-radius: 16px; 
+            border: 1px solid var(--border); 
+            overflow-y: auto; 
+            max-height: 80vh; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; text-align: left; padding: 16px 24px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; z-index: 10; } 
+        td { padding: 16px 24px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #f8fafc; }
+
+        /* UI ELEMENTS */
+        .btn-primary { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-danger { background: #fee2e2; color: var(--danger); padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-danger:hover { background: #fecaca; }
+        
+        .btn-icon { width: 34px; height: 34px; border-radius: 8px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .btn-edit { background: #e0e7ff; color: var(--primary); } .btn-edit:hover { background: #c7d2fe; }
+        .btn-assign { background: #dcfce7; color: var(--success); } .btn-assign:hover { background: #bbf7d0; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+        .badge-blue { background: #e0e7ff; color: var(--primary); }
+        .badge-gray { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; }
+
+        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 12px; font-size: 0.95rem; outline: none; transition: 0.2s; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        /* --- CHAT PROFESIONAL (UPDATED) --- */
+        .chat-layout { display: flex; height: calc(100vh - 120px); background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .chat-sidebar { width: 320px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: #fff; }
+        
+        /* BUSCADOR DE CHAT */
+        .chat-search-box { padding: 15px; border-bottom: 1px solid var(--border); background: #f8fafc; }
+        .chat-search-input { width: 100%; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; font-size: 0.9rem; transition: 0.2s; background: white; }
+        .chat-search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1); }
+
+        .bulk-bar { background: #eff6ff; padding: 10px 15px; display: none; align-items: center; justify-content: space-between; border-bottom: 1px solid #dbeafe; }
+        .chat-list { flex: 1; overflow-y: auto; }
+        
+        /* Acordeón de Grupos */
+        .group-header { padding: 12px 20px; background: #f8fafc; color: var(--text-main); font-weight: 700; font-size: 0.85rem; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .group-header:hover { background: #f1f5f9; }
+        .group-content { display: none; } /* Oculto por defecto */
+        .group-content.open { display: block; }
+        
+        .chat-item { display: flex; align-items: center; padding: 12px 20px; cursor: pointer; transition: 0.2s; border-bottom: 1px solid #f8fafc; }
+        .chat-item:hover { background: #f8fafc; }
+        .chat-item.active { background: #eef2ff; border-left: 3px solid var(--primary); }
+        
+        .avatar-circle { width: 38px; height: 38px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; margin-right: 12px; flex-shrink: 0; }
+        .chat-info { flex: 1; overflow: hidden; }
+        .chat-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        .chat-preview { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .unread-badge { background: var(--danger); color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: auto; display: none; }
+        
+        .chat-main { flex: 1; display: flex; flex-direction: column; background: #f8fafc; }
+        .chat-topbar { height: 60px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 70%; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .msg-me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .msg-other { align-self: flex-start; background: white; color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
+        .msg-time { font-size: 0.7rem; opacity: 0.7; text-align: right; margin-top: 4px; }
+        .input-area { padding: 20px; background: white; border-top: 1px solid var(--border); display: flex; gap: 12px; }
+        .input-field { flex: 1; padding: 12px 20px; border-radius: 25px; border: 1px solid var(--border); outline: none; background: #f8fafc; }
+        .btn-send { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-send:hover { transform: scale(1.1); }
+        .chk-select { margin-right: 10px; transform: scale(1.2); accent-color: var(--primary); cursor: pointer; }
+        .bulk-count { color: var(--primary); font-weight: 700; font-size: 0.85rem; }
+        .empty-chat { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; }
+        .empty-chat i { font-size: 4rem; margin-bottom: 15px; color: #e2e8f0; }
+        .chat-input-wrapper { padding: 20px; background: white; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+        .chat-input-field { flex: 1; padding: 12px 15px; border-radius: 25px; border: 1px solid #e2e8f0; background: #f8fafc; outline: none; transition: 0.3s; }
+        .chat-input-field:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .avatar-circle { width: 40px; height: 40px; background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; margin-right: 12px; flex-shrink: 0; }
+        .chat-topbar { height: 65px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); justify-content: space-between; }
+        .chat-user-profile { display: flex; align-items: center; gap: 12px; }
+        .chat-active-name { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+        .chat-active-email { font-size: 0.8rem; color: var(--text-muted); }
+
+        /* SIMULADOR EDITOR */
+        .step-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; }
+        .step-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+        .step-num { background: #e0e7ff; color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
+        .opt-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+
+        /* MODALES */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-box { background: white; width: 500px; padding: 30px; border-radius: 20px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+        
+        .check-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .check-item:hover { background: #f8fafc; }
+        .check-item input { transform: scale(1.2); accent-color: var(--primary); }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand"><img src="geincos.png" alt="Admin"> <span>Admin Panel</span></div>
+        
+        <div class="menu-label">Analítica</div>
+        <a href="dashboard.html" class="menu-item"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        <div class="menu-item" onclick="nav('reports', this); loadReports()"><i class="fas fa-file-invoice"></i> Reportes</div>
+        <div class="menu-item" onclick="nav('duel-results', this); loadAdminDuels()"><i class="fas fa-trophy"></i> Resultados PvP</div>
+        <div class="menu-item" onclick="nav('chat', this); loadChatGroups()">
+            <i class="fas fa-comments"></i> Mensajería
+            <span class="menu-badge" id="globalChatBadge">0</span>
+        </div>
+
+        <div class="menu-label">Gestión</div>
+        <div class="menu-item active" onclick="nav('users', this); loadUsers()"><i class="fas fa-users"></i> Usuarios</div>
+        <div class="menu-item" onclick="nav('courses', this); loadCourses()"><i class="fas fa-book"></i> Materiales</div>
+        <div class="menu-item" onclick="nav('exams', this); loadCoursesSelect()"><i class="fas fa-clipboard-check"></i> Evaluaciones</div>
+        <div class="menu-item" onclick="nav('simulador', this); loadSimulatorsList()"><i class="fas fa-gamepad"></i> Simuladores</div>
+        
+        <div class="menu-item" style="margin-top:auto; color:var(--danger)" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</div>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2 id="pageTitle">Usuarios</h2>
+        </div>
+
+        <div id="users" class="content-section active">
+            <div class="table-container">
+                <div style="padding:15px; display:flex; justify-content:flex-end; border-bottom:1px solid var(--border);">
+                    <button class="btn-primary" onclick="downloadUsersExcel()"><i class="fas fa-file-excel"></i> Exportar</button>
+                </div>
+                <table>
+                    <thead><tr><th>Usuario</th><th>Grupo</th><th>Correo</th><th>DNI</th><th>Acciones</th></tr></thead>
+                    <tbody id="tbodyUsers"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="courses" class="content-section">
+            <div class="table-container">
+                <div style="padding:15px; display:flex; justify-content:flex-end; border-bottom:1px solid var(--border);">
+                    <button class="btn-primary" onclick="openModal('modalCourse','create')"><i class="fas fa-plus"></i> Nuevo Material</button>
+                </div>
+                <table>
+                    <thead><tr><th>Módulo</th><th>Título</th><th>Tipo</th><th>Acciones</th></tr></thead>
+                    <tbody id="tbodyCourses"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="reports" class="content-section">
+            <div class="table-container">
+                <div style="padding:15px; display:flex; gap:10px; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);">
+                    <select id="filterGroup" class="form-control" style="width:200px; margin:0" onchange="filterTable()"><option value="all">Todos los grupos</option></select>
+                    <div style="display:flex; gap:10px">
+                        <button class="btn-primary" onclick="downloadExcelReport()"><i class="fas fa-download"></i> General</button>
+                        <button class="btn-success" onclick="downloadDetailedAnswers()"><i class="fas fa-list"></i> Detallado</button>
+                    </div>
+                </div>
+                <table>
+                    <thead><tr><th>Fecha</th><th>Grupo</th><th>Usuario</th><th>Correo</th><th>Actividad</th><th>Nota</th></tr></thead>
+                    <tbody id="tbodyReports"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="chat" class="content-section">
+            <div class="chat-layout">
+                <div class="chat-sidebar">
+                    <div class="chat-search-box">
+                        <input type="text" id="chatSearchInput" class="chat-search-input" placeholder="Buscar grupo o usuario..." onkeyup="filterChatList()">
+                    </div>
+                    <div class="bulk-bar" id="bulkActionsBar">
+                        <span class="bulk-count" id="selectedCount">0 seleccionados</span>
+                        <button class="btn-primary" style="font-size:0.7rem; padding:4px 10px;" onclick="prepareBulkMessage()">Enviar a todos</button>
+                    </div>
+                    <div class="chat-list" id="chatGroupList">
+                        <div style="padding:20px; text-align:center; color:#94a3b8">Cargando...</div>
+                    </div>
+                </div>
+                <div class="chat-main">
+                    <div class="chat-topbar" id="chatHeaderBar" style="display:none;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="avatar-circle" id="chatHeaderAvatar">U</div>
+                            <div>
+                                <div class="chat-name" id="chatHeaderName">Usuario</div>
+                                <div class="chat-preview" id="chatHeaderEmail">email@ejemplo.com</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="messages-area" id="adminChatMessages">
+                        <div class="empty-chat">
+                            <i class="far fa-comments"></i>
+                            <h3>Centro de Mensajería</h3>
+                            <p>Selecciona un usuario o grupo para comenzar.</p>
+                        </div>
+                    </div>
+                    <div class="input-area" id="adminChatInputArea" style="display:none;">
+                        <input type="text" id="adminMsgInput" class="input-field" placeholder="Escribe un mensaje...">
+                        <button class="btn-send" onclick="sendAdminMessage()"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="exams" class="content-section">
+            <div class="table-container">
+                <div style="padding:15px; display:flex; gap:10px; border-bottom:1px solid var(--border);">
+                    <select id="selCourse" class="form-control" style="width:300px; margin:0" onchange="loadQ()"><option>Selecciona un curso...</option></select>
+                    <button class="btn-primary" onclick="openQModal('create')"><i class="fas fa-plus"></i> Crear Pregunta</button>
+                </div>
+                <table>
+                    <thead><tr><th>Puntos</th><th>Pregunta</th><th>Correcta</th><th>Acción</th></tr></thead>
+                    <tbody id="tbodyQuestions"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="simulador" class="content-section">
+            <div class="table-container">
+                <div style="padding:15px; display:flex; justify-content:flex-end; border-bottom:1px solid var(--border);">
+                    <button class="btn-primary" onclick="openSimCreator('create')"><i class="fas fa-plus"></i> Nuevo Simulador</button>
+                </div>
+                <table>
+                    <thead><tr><th>Título</th><th>Descripción</th><th>Acciones</th></tr></thead>
+                    <tbody id="tbodySims"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="simulador-editor" class="content-section" style="display:none;">
+            <div style="background:var(--surface); padding:20px; border-radius:16px; border:1px solid var(--border); display:flex; flex-direction:column; height:100%;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px; align-items:center;">
+                    <button class="btn-danger" onclick="cancelSimEdit()">← Volver</button>
+                    <h3 id="simEditorTitle">Editando Simulador</h3>
+                    <div style="display:flex; gap:10px">
+                        <button class="btn-primary" onclick="agregarNuevoPaso()"><i class="fas fa-plus"></i> Paso</button>
+                        <button class="btn-success" onclick="guardarSimulacionActual()"><i class="fas fa-save"></i> Guardar</button>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <input type="text" id="simTitleInput" class="form-control" placeholder="Título del Escenario" style="margin:0">
+                    <input type="text" id="simDescInput" class="form-control" placeholder="Descripción breve" style="margin:0">
+                </div>
+                <div id="editor-content-area" style="flex:1; overflow-y:auto; padding-right:10px; background:#f8fafc; border-radius:12px; padding:20px; border:1px solid var(--border);"></div>
+            </div>
+        </div>
+
+        <div id="duel-results" class="content-section">
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Fecha</th><th>Grupo</th><th>Retador vs Oponente</th><th>Marcador</th><th>Ganador</th></tr></thead>
+                    <tbody id="tbodyDuelsAdmin"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalUser">
+        <div class="modal-box">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <h3>Editar Usuario</h3><br>
+            <input type="hidden" id="uUserOrigin">
+            <input type="text" id="uDNI" class="form-control" placeholder="DNI">
+            <input type="text" id="uTag" class="form-control" placeholder="Grupo (Ej: G-01)">
+            <input type="text" id="uPass" class="form-control" placeholder="Nueva Clave (Opcional)">
+            <button class="btn-primary" style="width:100%" onclick="saveU()">Guardar Cambios</button>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modalCourse"><div class="modal-box"><span class="close-modal" onclick="closeModals()">&times;</span><h3>Gestión de Material</h3><br><input type="hidden" id="cMode" value="create"><input type="hidden" id="cTitleOrigin"><input type="text" id="cModule" class="form-control" placeholder="Nombre del Módulo"><input type="text" id="cTitle" class="form-control" placeholder="Título del Material"><input type="text" id="cDesc" class="form-control" placeholder="Descripción corta"><select id="cCat" class="form-control"><option>BANCO</option><option>AUNA</option><option>COBRANZAS</option></select><select id="cType" class="form-control" onchange="toggleB()"><option value="video">Video (YouTube/Drive)</option><option value="imagen">Imagen (Drive/URL)</option><option value="pdf">Documento PDF</option><option value="ppt">Presentación</option><option value="audio">Audio</option><option value="flashcard">Juego Flashcards</option><option value="completar">Juego Completar</option></select><div id="vidSec"><input type="text" id="cVideo" class="form-control" placeholder="Enlace del archivo (URL)"></div><div id="gameSec" style="display:none; background:#f8fafc; padding:15px; border-radius:12px; border:1px solid var(--border); margin-bottom:15px;"><div id="gameItems"></div><button class="btn-primary" style="width:100%; margin-top:10px" onclick="addGameItem()">+ Agregar Ítem</button><div id="areaCompletar" style="display:none"><textarea id="gText" class="form-control" placeholder="Escribe la frase y usa [palabra] para ocultarla."></textarea></div></div><button class="btn-primary" style="width:100%" onclick="saveMat()">Guardar Material</button></div></div>
+    <div class="modal-overlay" id="modalQ"><div class="modal-box"><span class="close-modal" onclick="closeModals()">&times;</span><h3>Editar Pregunta</h3><br><input type="hidden" id="qMode" value="create"><input type="hidden" id="qOriginal"><div style="display:flex; gap:10px"><input type="number" id="qPoints" class="form-control" placeholder="Pts" value="2" style="width:80px"><input type="text" id="qTxt" class="form-control" placeholder="Escribe la pregunta aquí..."></div><input type="text" id="op1" class="form-control" placeholder="Opción A"><input type="text" id="op2" class="form-control" placeholder="Opción B"><input type="text" id="op3" class="form-control" placeholder="Opción C"><label style="font-size:0.8rem; font-weight:bold; color:#666">Respuesta Correcta:</label><select id="correct" class="form-control"><option value="op1">Opción A</option><option value="op2">Opción B</option><option value="op3">Opción C</option></select><button class="btn-primary" style="width:100%" onclick="saveQ()">Guardar Pregunta</button></div></div>
+    <div class="modal-overlay" id="modalAssign"><div class="modal-box"><span class="close-modal" onclick="closeModals()">&times;</span><h3>Asignar Contenido</h3><p style="color:#666; margin-bottom:15px; font-size:0.9rem">Selecciona qué cursos y simuladores verá: <b id="assignUserTitle" style="color:var(--primary)"></b></p><div id="assignList" style="max-height:300px; overflow-y:auto; border:1px solid var(--border); padding:10px; margin-bottom:20px; border-radius:8px; background:#f9fafb;"></div><button class="btn-primary" style="width:100%" onclick="saveAssignments()">Guardar Asignaciones</button></div></div>
+
+    <script>
+        const API = 'https://script.google.com/macros/s/AKfycbylUIGthH5_WWzZmGTCoYSp1MaG0Fh_4HA20FOBcfm7pjislAHqDqWeTxPQOJ_baeKTNw/exec';
+        
+        let globalReportData = [], datosEditor = [];
+        let currentAssignUser = "", currentSimMode = 'create', currentSimTitleOrig = '';
+        let currentChatUser = null, adminChatInterval = null, selectedChatUsers = new Set(), isBulkMode = false;
+
+        function nav(id, el) { 
+            document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); 
+            document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active')); 
+            el.classList.add('active'); 
+            document.getElementById('pageTitle').innerText = id === 'duel-results' ? 'Resultados PvP' : id.charAt(0).toUpperCase() + id.slice(1);
+            if(id === 'chat') loadChatGroups();
+        }
+        
+        function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m=>m.style.display='none'); }
+        function openModal(id, mode) { 
+            document.getElementById(id||'modalCourse').style.display='flex'; 
+            if(!id) toggleB(); 
+            if(mode==='create'){
+                document.getElementById('cMode').value='create'; 
+                document.getElementById('cTitle').value=''; 
+                document.getElementById('cVideo').value=''; 
+                document.getElementById('gameItems').innerHTML='';
+                if(id==='modalQ') {
+                    document.getElementById('qPoints').value='2'; document.getElementById('qTxt').value=''; document.getElementById('op1').value=''; document.getElementById('op2').value=''; document.getElementById('op3').value='';
+                }
+            } 
+        }
+        function logout() { if(confirm("¿Cerrar sesión de administrador?")) { localStorage.removeItem('usuarioActual'); window.location.href='index.html'; } }
+        function post(a,d,c){ let f=new FormData(); f.append('action',a); for(let k in d)f.append(k,d[k]); fetch(API,{method:'POST', body:f}).then(r=>r.json()).then(c); }
+        window.onload = initAll;
+        function initAll() { loadUsers(); loadCourses(); loadCoursesSelect(); checkNotifications(); setInterval(checkNotifications, 5000); }
+
+        // --- NOTIFICACIONES ---
+        function checkNotifications() {
+            let f = new FormData(); f.append('action', 'checkNotifications'); f.append('Usuario', 'Admin');
+            fetch(API, {method:'POST', body:f}).then(r=>r.json()).then(d => {
+                let badge = document.getElementById('globalChatBadge');
+                if(d.unread > 0) { badge.style.display = 'inline-block'; badge.innerText = d.unread; } else badge.style.display = 'none';
+                if(document.getElementById('chat').classList.contains('active')) {
+                    for(let user in d.details) { let b = document.getElementById('badge-'+user); if(b) { b.innerText = d.details[user]; b.style.display = 'inline-block'; } }
+                }
+            });
+        }
+
+        // --- CHAT LOGIC ---
+        function loadChatGroups() {
+            post('readUsers', {}, res => {
+                let groups = {};
+                res.data.forEach(u => { 
+                    if(u.rol !== 'admin') { 
+                        let g = u.etiqueta || 'General'; 
+                        if(!groups[g]) groups[g] = []; 
+                        groups[g].push(u); 
+                    } 
+                });
+                
+                let h = '';
+                // Ordenar claves de grupos
+                Object.keys(groups).sort().forEach(g => {
+                    h += `<div class="group-container" data-group-name="${g.toLowerCase()}">
+                            <div class="group-header" onclick="toggleGroup('${g}')">
+                                <span>${g}</span> <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div id="group-${g}" class="group-content">`;
+                    
+                    groups[g].forEach(u => {
+                        let ini = String(u.usuario).substring(0,2).toUpperCase();
+                        let searchTerm = (u.usuario + ' ' + u.correo).toLowerCase();
+                        
+                        h += `<div class="chat-item" data-search="${searchTerm}">
+                                <input type="checkbox" class="chk-select" value="${u.usuario}" onchange="toggleUserSelection(this)">
+                                <div class="avatar-circle">${ini}</div>
+                                <div class="chat-info" onclick="selectChatUser('${u.usuario}', '${u.correo}', this)">
+                                    <div class="chat-name">${u.correo} <span class="unread-badge" id="badge-${u.usuario}">0</span></div>
+                                    <div class="chat-preview">${u.usuario}</div>
+                                </div>
+                              </div>`;
+                    });
+                    h += `</div></div>`;
+                });
+                document.getElementById('chatGroupList').innerHTML = h;
+            });
+        }
+
+        function toggleGroup(id) { 
+            let el = document.getElementById('group-'+id); 
+            el.classList.toggle('open');
+        }
+        
+        // --- BUSCADOR DE CHAT INTELIGENTE ---
+        function filterChatList() {
+            let input = document.getElementById('chatSearchInput').value.toLowerCase();
+            let groups = document.querySelectorAll('.group-container');
+
+            groups.forEach(group => {
+                let groupName = group.getAttribute('data-group-name');
+                let items = group.querySelectorAll('.chat-item');
+                let hasVisibleItems = false;
+
+                // Si la búsqueda coincide con el nombre del grupo, mostramos todo el grupo
+                if (groupName.includes(input)) {
+                    group.style.display = 'block';
+                    items.forEach(item => item.style.display = 'flex');
+                    // Opcional: Expandir el grupo si coincide
+                    group.querySelector('.group-content').classList.add('open');
+                } else {
+                    // Si no coincide el grupo, buscamos en los items
+                    items.forEach(item => {
+                        let text = item.getAttribute('data-search');
+                        if (text.includes(input)) {
+                            item.style.display = 'flex';
+                            hasVisibleItems = true;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    // Mostrar/Ocultar el grupo si tiene items visibles
+                    if (hasVisibleItems) {
+                        group.style.display = 'block';
+                        group.querySelector('.group-content').classList.add('open'); // Abrir automáticamente al buscar
+                    } else {
+                        group.style.display = 'none';
+                    }
+                }
+                
+                // Si el input está vacío, restaurar estado original (cerrado)
+                if(input === "") {
+                    group.style.display = 'block';
+                    items.forEach(item => item.style.display = 'flex');
+                    group.querySelector('.group-content').classList.remove('open');
+                }
+            });
+        }
+
+        function prepareBulkMessage() {
+            if(selectedChatUsers.size === 0) return alert("Selecciona al menos un usuario");
+        }
+
+        function toggleUserSelection(chk) {
+            if(chk.checked) selectedChatUsers.add(chk.value); else selectedChatUsers.delete(chk.value);
+            let count = selectedChatUsers.size;
+            if(count > 0) {
+                document.getElementById('bulkActionsBar').style.display = 'flex';
+                document.getElementById('selectedCount').innerText = count + ' seleccionados';
+                isBulkMode = true; currentChatUser = null; clearInterval(adminChatInterval);
+                document.getElementById('adminChatMessages').innerHTML = '<div class="empty-chat"><i class="fas fa-mail-bulk"></i><h3>Modo Masivo</h3><p>Enviando a '+count+' usuarios.</p></div>';
+                document.getElementById('chatHeaderBar').style.display = 'none'; document.getElementById('adminChatInputArea').style.display = 'flex';
+            } else {
+                document.getElementById('bulkActionsBar').style.display = 'none'; isBulkMode = false;
+                document.getElementById('adminChatMessages').innerHTML = '<div class="empty-chat"><i class="far fa-comments"></i><h3>Selecciona un usuario</h3></div>';
+                document.getElementById('adminChatInputArea').style.display = 'none';
+            }
+        }
+        function selectChatUser(user, email, elem) {
+            if(isBulkMode) return;
+            currentChatUser = user;
+            document.querySelectorAll('.chat-item').forEach(e => e.classList.remove('active'));
+            elem.closest('.chat-item').classList.add('active');
+            document.getElementById('chatHeaderBar').style.display = 'flex';
+            document.getElementById('chatHeaderName').innerText = user;
+            document.getElementById('chatHeaderEmail').innerText = email;
+            document.getElementById('chatHeaderAvatar').innerText = String(user).substring(0,2).toUpperCase();
+            document.getElementById('adminChatInputArea').style.display = 'flex';
+            let b = document.getElementById('badge-'+user); if(b) b.style.display = 'none';
+            loadAdminMessages();
+            if(adminChatInterval) clearInterval(adminChatInterval);
+            adminChatInterval = setInterval(loadAdminMessages, 4000);
+        }
+        function loadAdminMessages() {
+            if(!currentChatUser || isBulkMode) return;
+            let f = new FormData(); f.append('action', 'readChat'); f.append('Usuario1', 'Admin'); f.append('Usuario2', currentChatUser);
+            fetch(API, {method:'POST', body:f}).then(r=>r.json()).then(d => {
+                let div = document.getElementById('adminChatMessages'); div.innerHTML = '';
+                if(d.data.length === 0) div.innerHTML = '<div class="empty-chat"><p>Sin mensajes previos.</p></div>';
+                d.data.forEach(m => {
+                    let isMe = m.remitente === 'Admin'; let cls = isMe ? 'msg-me' : 'msg-other';
+                    div.innerHTML += `<div class="msg ${cls}"><div>${m.mensaje}</div><div class="msg-time">${new Date(m.fecha).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+                });
+                div.scrollTop = div.scrollHeight;
+            });
+        }
+        function sendAdminMessage() {
+            let txt = document.getElementById('adminMsgInput').value; if(!txt.trim()) return;
+            document.getElementById('adminMsgInput').value = '';
+            if (isBulkMode) {
+                let promises = []; selectedChatUsers.forEach(u => { let f = new FormData(); f.append('action', 'sendChat'); f.append('Remitente', 'Admin'); f.append('Destinatario', u); f.append('Mensaje', txt); promises.push(fetch(API, {method:'POST', body:f})); });
+                Promise.all(promises).then(() => { alert("Enviado a " + selectedChatUsers.size + " usuarios."); document.querySelectorAll('.chk-select').forEach(c => c.checked = false); selectedChatUsers.clear(); toggleUserSelection({checked:false}); });
+            } else {
+                let f = new FormData(); f.append('action', 'sendChat'); f.append('Remitente', 'Admin'); f.append('Destinatario', currentChatUser); f.append('Mensaje', txt);
+                fetch(API, {method:'POST', body:f}).then(() => loadAdminMessages());
+            }
+        }
+
+        // --- CRUD USUARIOS ---
+        function loadUsers() { post('readUsers',{},d=>{ let h=''; d.data.forEach(u=>{ if(u.rol!='admin') { h+=`<tr><td>${u.usuario}</td><td><span class="badge badge-gray">${u.etiqueta||"-"}</span></td><td><b>${u.correo||""}</b></td><td>${u.dni}</td><td style="display:flex; gap:8px"><button class="btn-icon btn-assign" onclick="openAssignModal('${u.usuario}')"><i class="fas fa-book-open"></i></button><button class="btn-icon btn-edit" onclick="editU('${u.usuario}','${u.dni}','${u.etiqueta}')"><i class="fas fa-pen"></i></button><button class="btn-icon btn-danger" onclick="delU('${u.usuario}')"><i class="fas fa-trash"></i></button></td></tr>`; }}); document.getElementById('tbodyUsers').innerHTML=h; }); }
+        
+        // --- SIMULADOR EDITOR ---
+        function loadSimulatorsList() { post('readCourses', {}, res => { let h = ''; let sims = res.data.filter(c => c.tipo === 'simulador'); if (sims.length === 0) h = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#999">No hay simuladores creados.</td></tr>'; else { sims.forEach(s => { let encodedData = encodeURIComponent(s.dataJuego); h += `<tr><td><b>${s.titulo}</b></td><td>${s.descripcion}</td><td><button class="btn-icon btn-edit" onclick="prepareEditCourse('${s.titulo}','${s.descripcion}','${s.video}','${s.categoria}','${s.modulo}','${s.tipo}','${encodeURIComponent(s.dataJuego||'')}')"><i class="fas fa-pen"></i></button> <button class="btn-icon btn-danger" onclick="delC('${s.titulo}')"><i class="fas fa-trash"></i></button></td></tr>`; }); } document.getElementById('tbodySims').innerHTML = h; }); }
+        function openSimCreator(mode, title='', desc='', data='') { 
+            currentSimMode = mode; currentSimTitleOrig = title; 
+            document.getElementById('simulador').style.display = 'none'; 
+            document.getElementById('simulador-editor').style.display = 'flex'; 
+            document.getElementById('simTitleInput').value = title; 
+            document.getElementById('simDescInput').value = desc; 
+            if (mode === 'edit' && data) { try { datosEditor = JSON.parse(decodeURIComponent(data)); } catch(e) { datosEditor = []; } } else { datosEditor = [{ titulo: "INICIO", cliente: "Hola...", opciones: ["A", "B"], correcta: 0 }]; } 
+            renderizarEditor(); 
+        }
+        function cancelSimEdit() { document.getElementById('simulador-editor').style.display = 'none'; document.getElementById('simulador').style.display = 'flex'; loadSimulatorsList(); }
+        function renderizarEditor() { 
+            const area = document.getElementById('editor-content-area'); area.innerHTML = ''; 
+            datosEditor.forEach((paso, indexPaso) => { 
+                const card = document.createElement('div'); card.className = 'step-card'; 
+                let htmlOpciones = ''; 
+                paso.opciones.forEach((optTexto, indexOpt) => { 
+                    const isChecked = (indexOpt == paso.correcta) ? 'checked' : ''; 
+                    htmlOpciones += `<div class="opt-row"><input type="radio" name="correcta-${indexPaso}" onchange="setCorrecta(${indexPaso}, ${indexOpt})" ${isChecked}><input type="text" class="form-control" style="margin:0" value="${optTexto}" oninput="updateOpcion(${indexPaso}, ${indexOpt}, this.value)"><i class="fas fa-trash" style="color:var(--danger); cursor:pointer" onclick="borrarOpcion(${indexPaso}, ${indexOpt})"></i></div>`; 
+                }); 
+                card.innerHTML = `<div class="step-header"><span class="step-num">PASO ${indexPaso + 1}</span><i class="fas fa-trash" style="color:var(--danger); cursor:pointer" onclick="borrarPaso(${indexPaso})"></i></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:15px"><div style="display:flex; flex-direction:column"><label style="font-size:0.8rem; font-weight:bold; color:#666">Nombre del Paso</label><input type="text" class="form-control" value="${paso.titulo}" oninput="updateCampo(${indexPaso}, 'titulo', this.value)"></div><div style="display:flex; flex-direction:column"><label style="font-size:0.8rem; font-weight:bold; color:#666">Mensaje de Error</label><input type="text" class="form-control" value="${paso.error||''}" oninput="updateCampo(${indexPaso}, 'error', this.value)"></div></div><label style="font-size:0.8rem; font-weight:bold; color:#666">Lo que dice el Cliente:</label><textarea class="form-control" rows="2" oninput="updateCampo(${indexPaso}, 'cliente', this.value)">${paso.cliente}</textarea><label style="font-size:0.8rem; font-weight:bold; color:#666">Opciones de Respuesta (Marca la correcta):</label><div>${htmlOpciones}<button class="btn-primary" style="width:100%; margin-top:10px; background:#e0e7ff; color:var(--primary)" onclick="agregarOpcion(${indexPaso})">+ Agregar Opción</button></div>`; 
+                area.appendChild(card); 
+            }); 
+        }
+        function updateCampo(idx, campo, val) { datosEditor[idx][campo] = val; }
+        function updateOpcion(idx, optIdx, val) { datosEditor[idx].opciones[optIdx] = val; }
+        function setCorrecta(idx, optIdx) { datosEditor[idx].correcta = optIdx; }
+        function borrarPaso(idx) { if(confirm("¿Borrar este paso?")) { datosEditor.splice(idx, 1); renderizarEditor(); } }
+        function agregarNuevoPaso() { datosEditor.push({ titulo: "NUEVO", cliente: "...", opciones: ["Opción A", "Opción B"], correcta: 0 }); renderizarEditor(); }
+        function borrarOpcion(idx, optIdx) { if (datosEditor[idx].opciones.length <= 2) return alert("Mínimo 2 opciones"); datosEditor[idx].opciones.splice(optIdx, 1); if(datosEditor[idx].correcta>=datosEditor[idx].opciones.length) datosEditor[idx].correcta=0; renderizarEditor(); }
+        function agregarOpcion(idx) { datosEditor[idx].opciones.push("Nueva opción"); renderizarEditor(); }
+        function guardarSimulacionActual() { let t = document.getElementById('simTitleInput').value; let d = document.getElementById('simDescInput').value; if(!t) return alert("Falta el título"); let payload = { Titulo: t, Descripcion: d, Data: JSON.stringify(datosEditor), Modo: currentSimMode }; if(currentSimMode === 'edit') payload.TituloOriginal = currentSimTitleOrig; post('saveSimulacion', payload, (res) => { if(res.result === 'success') { alert("Guardado"); cancelSimEdit(); } else alert("Error: " + res.message); }); }
+
+        // --- FUNCIONES RESTANTES ---
+        function loadAdminDuels() { document.getElementById('tbodyDuelsAdmin').innerHTML='<tr><td colspan="5">Cargando...</td></tr>'; post('getAllDuels',{},d=>{ let h=''; if(d.data.length===0)h='<tr><td colspan="5">Sin duelos</td></tr>'; else d.data.forEach(x=>{ h+=`<tr><td>${new Date(x.fecha).toLocaleDateString()}</td><td><span class="badge badge-blue">${x.grupo}</span></td><td>${x.retador} vs ${x.oponente}</td><td>${x.scoreR}-${x.scoreO}</td><td>${x.ganador}</td></tr>`;}); document.getElementById('tbodyDuelsAdmin').innerHTML=h; }); }
+        function openAssignModal(user) { currentAssignUser = user; document.getElementById('assignUserTitle').innerText = user; document.getElementById('assignList').innerHTML = '<p>Cargando cursos...</p>'; openModal('modalAssign'); post('readCourses', {}, allCourses => { post('getUserAssignments', {Usuario: user}, userCourses => { let assignedSet = new Set(userCourses.data); let h = ''; let list = allCourses.data; if(list.length === 0) h = '<p>No hay cursos creados.</p>'; else { list.forEach(c => { let checked = assignedSet.has(c.titulo) ? 'checked' : ''; h += `<label class="check-item"><input type="checkbox" value="${c.titulo}" ${checked}><span>${c.titulo} <small style="color:#666">(${c.tipo})</small></span></label>`; }); } document.getElementById('assignList').innerHTML = h; }); }); }
+        function saveAssignments() { let selected = []; document.querySelectorAll('#assignList input:checked').forEach(cb => selected.push(cb.value)); post('updateAssignments', { Usuario: currentAssignUser, Cursos: JSON.stringify(selected) }, () => { alert('Asignaciones guardadas'); closeModals(); }); }
+        function editU(u,d,t){ document.getElementById('uUserOrigin').value=u; document.getElementById('uDNI').value=d; document.getElementById('uTag').value=t; openModal('modalUser'); }
+        function saveU(){ post('editUser',{UsuarioOriginal:document.getElementById('uUserOrigin').value, NuevoDNI:document.getElementById('uDNI').value, NuevaEtiqueta:document.getElementById('uTag').value, NuevoPass:document.getElementById('uPass').value},()=>{alert('Guardado'); closeModals(); loadUsers();}); }
+        function delU(u){ if(confirm("¿Borrar usuario?")) post('deleteUser',{Usuario:u},loadUsers); }
+        function downloadUsersExcel(){ post('getFullReport',{},res=>{ let csv='\uFEFF"Usuario";"Grupo";"DNI";"Promedio"\n'; res.data.forEach(r=>{csv+=`"${r.usuario}";"${r.etiqueta}";"${r.dni}";"${r.promedio}"\n`}); let b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="Usuarios.csv"; a.click(); }); }
+        function loadCourses() { post('readCourses',{},d=>{ let h=''; d.data.sort((a,b)=>a.modulo.localeCompare(b.modulo)); d.data.forEach(c=>{ if(c.tipo!='simulador'){ h+=`<tr><td><b>${c.modulo}</b></td><td>${c.titulo}</td><td><span class="badge badge-gray">${c.tipo}</span></td><td><button class="btn-icon btn-edit" onclick="prepareEditCourse('${c.titulo}','${c.descripcion}','${c.video}','${c.categoria}','${c.modulo}','${c.tipo}','${encodeURIComponent(c.dataJuego||'')}')"><i class="fas fa-pen"></i></button> <button class="btn-icon btn-danger" onclick="delC('${c.titulo}')"><i class="fas fa-trash"></i></button></td></tr>`; }}); document.getElementById('tbodyCourses').innerHTML=h; }); }
+        function prepareEditCourse(t, d, v, c, m, type, data) { document.getElementById('cMode').value = 'edit'; document.getElementById('cTitleOrigin').value = t; document.getElementById('cTitle').value = t; document.getElementById('cDesc').value = d; document.getElementById('cVideo').value = v; document.getElementById('cCat').value = c; document.getElementById('cModule').value = m; document.getElementById('cType').value = type; openModal('modalCourse'); toggleB(); if(type!=='video' && type!=='imagen' && type!=='pdf' && type!=='ppt' && type!=='audio')try{let j=JSON.parse(decodeURIComponent(data)); if(type==='completar')document.getElementById('gText').value=j.text; else{document.getElementById('gameItems').innerHTML=''; j.forEach(x=>addGameItem(x.q,x.a));}}catch(e){} }
+        function saveMat(){ let t=document.getElementById('cType').value, link="", json=""; if(['video','imagen','pdf','ppt','audio'].includes(t)) link=document.getElementById('cVideo').value; else if(t=='completar') json=JSON.stringify({text:document.getElementById('gText').value}); else { let arr=[]; document.querySelectorAll('.game-item').forEach(e=>{ let i=e.querySelectorAll('input'); arr.push({q:i[0].value, a:i[1].value}); }); json=JSON.stringify(arr); } let d={Titulo:document.getElementById('cTitle').value, Modulo:document.getElementById('cModule').value, Categoria:document.getElementById('cCat').value, Tipo:t, Video:link, DataJuego:json, Descripcion:document.getElementById('cDesc').value}; let m=document.getElementById('cMode').value; if(m==='create') post('saveCourse', d, ()=>{alert("Guardado"); closeModals(); loadCourses();}); else { d.TituloOriginal=document.getElementById('cTitleOrigin').value; post('editCourse', d, ()=>{alert("Actualizado"); closeModals(); loadCourses();}); } }
+        function delC(t){ if(confirm("¿Borrar material?")) post('deleteCourse',{Titulo:t},loadCourses); }
+        function toggleB(){ let t=document.getElementById('cType').value; let isFile = ['video','imagen','pdf','ppt','audio'].includes(t); document.getElementById('vidSec').style.display=isFile?'block':'none'; document.getElementById('gameSec').style.display=isFile?'none':'block'; if(t=='completar'){document.getElementById('areaCompletar').style.display='block'; document.getElementById('listBuilder').style.display='none';}else if(!isFile){document.getElementById('areaCompletar').style.display='none'; document.getElementById('listBuilder').style.display='block'; if(document.getElementById('gameItems').innerHTML=='')addGameItem();} }
+        function addGameItem(q="",a=""){ let d=document.createElement('div'); d.className='game-item'; d.innerHTML=`<input class="form-control" placeholder="P" value="${q}" style="margin:0"><input class="form-control" placeholder="R" value="${a}" style="margin:0"><i class="fas fa-times" onclick="this.parentElement.remove()" style="color:red;cursor:pointer"></i>`; document.getElementById('gameItems').appendChild(d); }
+        function loadReports() { post('getFullReport', {}, res => { globalReportData = res.data; populateFilter(); filterTable(); }); }
+        function populateFilter() { let s = document.getElementById('filterGroup'); if(s.options.length <= 1) { [...new Set(globalReportData.map(u=>u.etiqueta||"General"))].forEach(g=>s.innerHTML+=`<option value="${g}">${g}</option>`); } }
+        function filterTable() { let v = document.getElementById('filterGroup').value; let d = v==='all' ? globalReportData : globalReportData.filter(u=>(u.etiqueta||"General")===v); let tb = document.getElementById('tbodyReports'); tb.innerHTML = ''; d.forEach(u => { u.detalles.forEach(det => { tb.innerHTML += `<tr><td>${new Date(det.f).toLocaleDateString()}</td><td>${u.etiqueta||"-"}</td><td>${u.usuario}</td><td>${u.correo||""}</td><td>${det.c}</td><td>${det.n}</td></tr>`; }); }); }
+        function downloadExcelReport() { post('getFullReport', {}, res => { let csv='\uFEFF"Fecha";"Grupo";"Usuario";"Actividad";"Nota"\n'; res.data.forEach(u=>{u.detalles.forEach(d=>csv+=`"${new Date(d.f).toLocaleDateString()}";"${u.etiqueta}";"${u.usuario}";"${d.c}";"${d.n}"\n`)}); let b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="Reporte_Detalle.csv"; a.click(); }); }
+        function downloadDetailedAnswers() { let sg=document.getElementById('filterGroup').value; post('getDetailedReport', {}, res => { let csv='\uFEFF"Fecha";"Grupo";"Usuario";"Curso";"Nota";"Detalle_Respuestas"\n'; res.data.forEach(row => { if(sg === 'all' || row.g === sg) { let cd = (row.d || "").replace(/"/g, "'").replace(/(\r\n|\n|\r)/gm, " "); csv += `"${new Date(row.f).toLocaleDateString()}";"${row.g}";"${row.u}";"${row.c}";"${row.n}";"${cd}"\n`; } }); let b=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Respuestas_${sg}.csv`; a.click(); }); }
+        function loadCoursesSelect() { post('readCourses', {}, data => { let s=document.getElementById('selCourse'); s.innerHTML='<option>Selecciona...</option>'; data.data.forEach(c=>{ let o=document.createElement('option'); o.value=c.titulo; o.innerText=c.titulo; s.appendChild(o); }); }); }
+        function loadQ(){ let c=document.getElementById('selCourse').value; if(!c)return; post('getExam',{Curso:c},d=>{ let tb=document.getElementById('tbodyQuestions'); tb.innerHTML=''; d.data.forEach(q=>{ tb.innerHTML+=`<tr><td><span class="badge badge-blue">${q.puntaje||0} pts</span></td><td>${q.pregunta}</td><td>${q.correcta}</td><td style="display:flex; gap:5px"><button class="btn-icon btn-edit" onclick="prepareEditQ('${q.pregunta}','${q.opciones[0]}','${q.opciones[1]}','${q.opciones[2]}','${q.correcta}','${q.puntaje}')"><i class="fas fa-pen"></i></button><button class="btn-icon btn-danger" onclick="delQ('${c}','${q.pregunta}')"><i class="fas fa-trash"></i></button></td></tr>`; }); }); }
+        function openQModal(mode) { if(document.getElementById('selCourse').value=='Selecciona un curso...') { alert('Selecciona curso'); return; } document.getElementById('qMode').value = mode; openModal('modalQ'); if(mode == 'create') { document.getElementById('qPoints').value='2'; document.getElementById('qTxt').value=''; document.getElementById('op1').value=''; document.getElementById('op2').value=''; document.getElementById('op3').value=''; } }
+        function prepareEditQ(txt, op1, op2, op3, corr, pts) { document.getElementById('qMode').value = 'edit'; document.getElementById('qOriginal').value = txt; document.getElementById('qTxt').value = txt; document.getElementById('op1').value = op1; document.getElementById('op2').value = op2; document.getElementById('op3').value = op3; document.getElementById('correct').value = (corr=='op1'?'op1':(corr=='op2'?'op2':'op3')); document.getElementById('qPoints').value = pts; openModal('modalQ'); }
+        function saveQ(){ let mode = document.getElementById('qMode').value; let d={ Curso:document.getElementById('selCourse').value, Pregunta:document.getElementById('qTxt').value, Op1:document.getElementById('op1').value, Op2:document.getElementById('op2').value, Op3:document.getElementById('op3').value, Correcta:document.getElementById('correct').value, Puntaje:document.getElementById('qPoints').value }; if (mode == 'create') post('saveQuestion',d,()=>{alert('Guardada'); closeModals(); loadQ();}); else { d.NuevaPregunta = d.Pregunta; d.PreguntaOriginal = document.getElementById('qOriginal').value; post('editQuestion',d,()=>{alert('Actualizada'); closeModals(); loadQ();}); } }
+        function delQ(c,p){ if(confirm("¿Borrar pregunta?")) post('deleteQuestion',{Curso:c, Pregunta:p},()=>loadQ()); }
+    </script>
+</body>
+</html>
